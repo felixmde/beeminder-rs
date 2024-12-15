@@ -1,5 +1,5 @@
 pub mod types;
-use crate::types::{CreateDatapoint, Datapoint, Goal, UserInfo, UserInfoDiff};
+use crate::types::{CreateDatapoint, Datapoint, GoalSummary, UserInfo, UserInfoDiff};
 use reqwest::Client;
 use time::OffsetDateTime;
 
@@ -157,7 +157,7 @@ impl BeeminderClient {
     ///
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
-    pub async fn get_goals(&self, username: &str) -> Result<Vec<Goal>, Error> {
+    pub async fn get_goals(&self, username: &str) -> Result<Vec<GoalSummary>, Error> {
         self.request(&format!("users/{username}/goals.json"), None)
             .await
     }
@@ -166,7 +166,7 @@ impl BeeminderClient {
     ///
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
-    pub async fn get_archived_goals(&self, username: &str) -> Result<Vec<Goal>, Error> {
+    pub async fn get_archived_goals(&self, username: &str) -> Result<Vec<GoalSummary>, Error> {
         self.request(&format!("users/{username}/goals/archived.json"), None)
             .await
     }

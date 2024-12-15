@@ -52,6 +52,49 @@ pub struct Goal {
     pub datapublic: bool,
     /// Amount pledged in USD on the goal
     pub pledge: f64,
+    /// Number of days until derailment (0 if in beemergency)
+    pub safebuf: i32,
+    /// Unix timestamp of the last (explicitly entered) datapoint
+    #[serde(with = "time::serde::timestamp")]
+    pub lastday: OffsetDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GoalSummary {
+    /// Final part of goal URL, used as identifier (e.g., "weight" in beeminder.com/alice/weight)
+    pub slug: String,
+    /// User-specified title for the goal
+    pub title: String,
+    /// Type of goal (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
+    pub goal_type: String,
+    /// Summary of what needs to be done by when, e.g., "+2 within 1 day".
+    pub limsum: String,
+    /// URL for the goal's graph SVG
+    pub svg_url: String,
+    /// URL for the goal's graph image
+    pub graph_url: String,
+    /// URL for the goal's graph thumbnail image
+    pub thumb_url: String,
+    /// Unix timestamp of derailment if nothing is reported
+    #[serde(with = "time::serde::timestamp")]
+    pub losedate: OffsetDateTime,
+    /// Unix timestamp of the goal date
+    #[serde(with = "time::serde::timestamp::option")]
+    pub goaldate: Option<OffsetDateTime>,
+    /// Goal value - the number the bright red line will eventually reach
+    pub goalval: Option<f64>,
+    /// Slope of the (final section of the) bright red line
+    pub rate: Option<f64>,
+    /// Unix timestamp of the last time this goal was updated
+    #[serde(with = "time::serde::timestamp")]
+    pub updated_at: OffsetDateTime,
+    /// Whether the graph is currently being updated
+    pub queued: bool,
+    /// Number of days until derailment (0 if in beemergency)
+    pub safebuf: i32,
+    /// Unix timestamp of the last (explicitly entered) datapoint
+    #[serde(with = "time::serde::timestamp")]
+    pub lastday: OffsetDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

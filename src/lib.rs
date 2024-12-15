@@ -1,5 +1,5 @@
 pub mod types;
-use crate::types::{CreateDatapoint, Datapoint, UserInfo, UserInfoDiff};
+use crate::types::{CreateDatapoint, Datapoint, Goal, UserInfo, UserInfoDiff};
 use reqwest::Client;
 use time::OffsetDateTime;
 
@@ -16,29 +16,42 @@ pub struct BeeminderClient {
 }
 
 impl BeeminderClient {
-    async fn request<T>(&self, endpoint: &str) -> Result<T, Error>
+    async fn request<T>(
+        &self,
+        endpoint: &str,
+        params: Option<Vec<(&str, &str)>>,
+    ) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
     {
+        let mut query = vec![("auth_token", self.api_key.as_str())];
+        if let Some(additional_params) = params {
+            query.extend(additional_params);
+        }
+
         let response = self
             .client
             .get(format!("{}{}", self.base_url, endpoint))
-            .query(&[("auth_token", &self.api_key)])
+            .query(&query)
             .send()
             .await?
             .error_for_status()?;
-
         response.json().await.map_err(Error::from)
     }
 
-    async fn post<T>(&self, endpoint: &str) -> Result<T, Error>
+    async fn post<T>(&self, endpoint: &str, params: Option<Vec<(&str, &str)>>) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
     {
+        let mut query = vec![("auth_token", self.api_key.as_str())];
+        if let Some(additional_params) = params {
+            query.extend(additional_params);
+        }
+
         let response = self
             .client
             .post(format!("{}{}", self.base_url, endpoint))
-            .query(&[("auth_token", &self.api_key)])
+            .query(&query)
             .send()
             .await?
             .error_for_status()?;
@@ -61,7 +74,7 @@ impl BeeminderClient {
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
     pub async fn get_user(&self, username: &str) -> Result<UserInfo, Error> {
-        self.request(&format!("users/{username}.json")).await
+        self.request(&format!("users/{username}.json"), None).await
     }
 
     /// Retrieves detailed user information with changes since the specified timestamp.
@@ -73,8 +86,9 @@ impl BeeminderClient {
         username: &str,
         diff_since: OffsetDateTime,
     ) -> Result<UserInfoDiff, Error> {
-        let timestamp = diff_since.unix_timestamp();
-        self.request(&format!("users/{username}.json?diff_since={timestamp}"))
+        let diff_since = diff_since.unix_timestamp().to_string();
+        let params = vec![("diff_since", diff_since.as_str())];
+        self.request(&format!("users/{username}.json"), Some(params))
             .await
     }
 
@@ -89,25 +103,17 @@ impl BeeminderClient {
         sort: Option<&str>,
         count: Option<u64>,
     ) -> Result<Vec<Datapoint>, Error> {
-        let mut endpoint = format!("users/{username}/goals/{goal}/datapoints.json");
+        let mut params = Vec::new();
+        params.push(("sort", sort.unwrap_or("timestamp")));
 
-        let mut query = Vec::new();
-
-        if let Some(sort) = sort {
-            query.push(format!("sort={sort}"));
-        } else {
-            query.push("sort=timestamp".to_string());
-        }
-
+        let count_str;
         if let Some(count) = count {
-            query.push(format!("count={count}"));
+            count_str = count.to_string();
+            params.push(("count", &count_str));
         }
 
-        if !query.is_empty() {
-            endpoint = format!("{}?{}", endpoint, query.join("&"));
-        }
-
-        self.request(&endpoint).await
+        let endpoint = format!("users/{username}/goals/{goal}/datapoints.json");
+        self.request(&endpoint, Some(params)).await
     }
 
     /// Creates a new datapoint for a goal.
@@ -120,23 +126,48 @@ impl BeeminderClient {
         goal: &str,
         datapoint: &CreateDatapoint,
     ) -> Result<Datapoint, Error> {
-        let mut query = Vec::new();
-        query.push(format!("value={}", datapoint.value));
+        let mut params = Vec::new();
+
+        let value_str = datapoint.value.to_string();
+        params.push(("value", value_str.as_str()));
+
+        let timestamp_str;
         if let Some(ts) = datapoint.timestamp {
-            query.push(format!("timestamp={}", ts.unix_timestamp()));
-        }
-        if let Some(ds) = &datapoint.daystamp {
-            query.push(format!("daystamp={ds}"));
-        }
-        if let Some(c) = &datapoint.comment {
-            query.push(format!("comment={c}"));
-        }
-        if let Some(rid) = &datapoint.requestid {
-            query.push(format!("requestid={rid}"));
+            timestamp_str = ts.unix_timestamp().to_string();
+            params.push(("timestamp", timestamp_str.as_str()));
         }
 
-        let mut endpoint = format!("users/{username}/goals/{goal}/datapoints.json");
-        endpoint = format!("{}?{}", endpoint, query.join("&"));
-        self.post(&endpoint).await
+        if let Some(ds) = &datapoint.daystamp {
+            params.push(("daystamp", ds.as_str()));
+        }
+
+        if let Some(c) = &datapoint.comment {
+            params.push(("comment", c.as_str()));
+        }
+
+        if let Some(rid) = &datapoint.requestid {
+            params.push(("requestid", rid.as_str()));
+        }
+
+        let endpoint = format!("users/{username}/goals/{goal}/datapoints.json");
+        self.post(&endpoint, Some(params)).await
+    }
+
+    /// Retrieves all goals for a user.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn get_goals(&self, username: &str) -> Result<Vec<Goal>, Error> {
+        self.request(&format!("users/{username}/goals.json"), None)
+            .await
+    }
+
+    /// Retrieves archived goals for a user.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn get_archived_goals(&self, username: &str) -> Result<Vec<Goal>, Error> {
+        self.request(&format!("users/{username}/goals/archived.json"), None)
+            .await
     }
 }

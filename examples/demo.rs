@@ -29,7 +29,7 @@ async fn main() {
     }
 
     let d = CreateDatapoint::new(1.0)
-        .with_comment("Test datapoint")
+        .with_comment("Test #hashtag datapoint")
         .with_requestid("unique-id-42");
     match client.create_datapoint("me", "meditation", &d).await {
         Ok(datapoint) => println!("Added: {datapoint:#?}"),

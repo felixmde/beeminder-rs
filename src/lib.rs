@@ -153,6 +153,35 @@ impl BeeminderClient {
         self.post(&endpoint, Some(params)).await
     }
 
+    /// Deletes a specific datapoint for a user's goal.
+    ///
+    /// # Arguments
+    /// * `username` - The username of the user.
+    /// * `goal` - The name of the goal.
+    /// * `datapoint_id` - The ID of the datapoint to delete.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or if the response cannot be parsed.
+    pub async fn delete_datapoint(
+        &self,
+        username: &str,
+        goal: &str,
+        datapoint_id: &str,
+    ) -> Result<Datapoint, Error> {
+        let endpoint = format!("users/{username}/goals/{goal}/datapoints/{datapoint_id}.json");
+        let query = vec![("auth_token", self.api_key.as_str())];
+
+        let response = self
+            .client
+            .delete(format!("{}{}", self.base_url, endpoint))
+            .query(&query)
+            .send()
+            .await?
+            .error_for_status()?;
+
+        response.json().await.map_err(Error::from)
+    }
+
     /// Retrieves all goals for a user.
     ///
     /// # Errors

@@ -1,6 +1,11 @@
 # beeminder-rs
 
-A Rust client library for the [Beeminder](https://www.beeminder.com/) API.
+An incomplete Rust client library for the [Beeminder](https://www.beeminder.com/) API.
+
+Why use `curl` if you can just use `serde` and `reqwest` to have 200 dependencies?
+
+You'll find that I add endpoints as I need them. Feel free to create an issue if 
+you need a specific endpoint.
 
 ## Installation
 
@@ -44,6 +49,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 MIT
 
-## Contributing
-
-Pull requests welcome!

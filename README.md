@@ -24,17 +24,20 @@ use time::OffsetDateTime;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = BeeminderClient::new(std::env::var("BEEMINDER_API_KEY")?);
+
+    // username defaults to 'me'; use `with_username` to change it
+    // let client = BeeminderClient::new("api-key").with_username("foo");
     
     // Create a datapoint
     let datapoint = CreateDatapoint::new(42.0)
         .with_timestamp(OffsetDateTime::now_utc())
         .with_comment("Meditation session");
         
-    client.create_datapoint("username", "meditation", &datapoint).await?;
+    client.create_datapoint("meditation", &datapoint).await?;
     
     // Fetch recent datapoints
     let datapoints = client
-        .get_datapoints("username", "meditation", Some("timestamp"), Some(10))
+        .get_datapoints("meditation", Some("timestamp"), Some(10))
         .await?;
         
     Ok(())

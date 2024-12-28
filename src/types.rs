@@ -119,11 +119,12 @@ pub struct Datapoint {
 
 /// Parameters for creating or updating a datapoint
 #[must_use]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct CreateDatapoint {
     /// The value to record
     pub value: f64,
     /// Timestamp for the datapoint, defaults to now if None
+    #[serde(with = "time::serde::timestamp::option")]
     pub timestamp: Option<OffsetDateTime>,
     /// Date string (e.g. "20150831"), alternative to timestamp
     pub daystamp: Option<String>,

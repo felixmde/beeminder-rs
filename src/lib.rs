@@ -13,25 +13,19 @@ pub struct BeeminderClient {
     client: Client,
     api_key: String,
     base_url: String,
+    username: String,
 }
 
 impl BeeminderClient {
-    async fn request<T>(
-        &self,
-        endpoint: &str,
-        params: Option<Vec<(&str, &str)>>,
-    ) -> Result<T, Error>
+    async fn get<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
+        U: serde::ser::Serialize,
     {
-        let mut query = vec![("auth_token", self.api_key.as_str())];
-        if let Some(additional_params) = params {
-            query.extend(additional_params);
-        }
-
         let response = self
             .client
             .get(format!("{}{}", self.base_url, endpoint))
+            .query(&[("auth_token", self.api_key.as_str())])
             .query(&query)
             .send()
             .await?
@@ -39,57 +33,59 @@ impl BeeminderClient {
         response.json().await.map_err(Error::from)
     }
 
-    async fn post<T>(&self, endpoint: &str, params: Option<Vec<(&str, &str)>>) -> Result<T, Error>
+    async fn post<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
+        U: serde::ser::Serialize,
     {
-        let mut query = vec![("auth_token", self.api_key.as_str())];
-        if let Some(additional_params) = params {
-            query.extend(additional_params);
-        }
-
         let response = self
             .client
             .post(format!("{}{}", self.base_url, endpoint))
-            .query(&query)
+            .query(&[("auth_token", self.api_key.as_str())])
+            .query(query)
             .send()
             .await?
             .error_for_status()?;
-
         response.json().await.map_err(Error::from)
     }
 
     /// Creates a new `BeeminderClient` with the given API key.
+    /// Default username is set to 'me'.
     #[must_use]
     pub fn new(api_key: String) -> Self {
         Self {
             client: Client::new(),
             api_key,
             base_url: "https://www.beeminder.com/api/v1/".to_string(),
+            username: "me".to_string(),
         }
     }
 
-    /// Retrieves information about a user.
+    /// Sets a username for this client.
+    #[must_use]
+    pub fn with_username(mut self, username: impl Into<String>) -> Self {
+        self.username = username.into();
+        self
+    }
+
+    /// Retrieves user information for user associated with client.
     ///
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
-    pub async fn get_user(&self, username: &str) -> Result<UserInfo, Error> {
-        self.request(&format!("users/{username}.json"), None).await
+    pub async fn get_user(&self) -> Result<UserInfo, Error> {
+        let endpoint = format!("users/{}.json", self.username);
+        self.get(&endpoint, &()).await
     }
 
     /// Retrieves detailed user information with changes since the specified timestamp.
     ///
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
-    pub async fn get_user_diff(
-        &self,
-        username: &str,
-        diff_since: OffsetDateTime,
-    ) -> Result<UserInfoDiff, Error> {
+    pub async fn get_user_diff(&self, diff_since: OffsetDateTime) -> Result<UserInfoDiff, Error> {
         let diff_since = diff_since.unix_timestamp().to_string();
-        let params = vec![("diff_since", diff_since.as_str())];
-        self.request(&format!("users/{username}.json"), Some(params))
-            .await
+        let query = [("diff_since", &diff_since)];
+        let endpoint = format!("users/{}.json", self.username);
+        self.get(&endpoint, &query).await
     }
 
     /// Retrieves datapoints for a specific goal.
@@ -98,22 +94,20 @@ impl BeeminderClient {
     /// Returns an error if the HTTP request fails or response cannot be parsed.
     pub async fn get_datapoints(
         &self,
-        username: &str,
         goal: &str,
         sort: Option<&str>,
         count: Option<u64>,
     ) -> Result<Vec<Datapoint>, Error> {
-        let mut params = Vec::new();
-        params.push(("sort", sort.unwrap_or("timestamp")));
+        let query: Vec<(&str, String)> = vec![
+            Some(("sort", sort.unwrap_or("timestamp").to_string())),
+            count.map(|c| ("count", c.to_string())),
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
 
-        let count_str;
-        if let Some(count) = count {
-            count_str = count.to_string();
-            params.push(("count", &count_str));
-        }
-
-        let endpoint = format!("users/{username}/goals/{goal}/datapoints.json");
-        self.request(&endpoint, Some(params)).await
+        let endpoint = format!("users/{}/goals/{goal}/datapoints.json", self.username);
+        self.get(&endpoint, &query).await
     }
 
     /// Creates a new datapoint for a goal.
@@ -122,41 +116,16 @@ impl BeeminderClient {
     /// Returns an error if the HTTP request fails or response cannot be parsed.
     pub async fn create_datapoint(
         &self,
-        username: &str,
         goal: &str,
         datapoint: &CreateDatapoint,
     ) -> Result<Datapoint, Error> {
-        let mut params = Vec::new();
-
-        let value_str = datapoint.value.to_string();
-        params.push(("value", value_str.as_str()));
-
-        let timestamp_str;
-        if let Some(ts) = datapoint.timestamp {
-            timestamp_str = ts.unix_timestamp().to_string();
-            params.push(("timestamp", timestamp_str.as_str()));
-        }
-
-        if let Some(ds) = &datapoint.daystamp {
-            params.push(("daystamp", ds.as_str()));
-        }
-
-        if let Some(c) = &datapoint.comment {
-            params.push(("comment", c.as_str()));
-        }
-
-        if let Some(rid) = &datapoint.requestid {
-            params.push(("requestid", rid.as_str()));
-        }
-
-        let endpoint = format!("users/{username}/goals/{goal}/datapoints.json");
-        self.post(&endpoint, Some(params)).await
+        let endpoint = format!("users/{}/goals/{goal}/datapoints.json", self.username);
+        self.post(&endpoint, datapoint).await
     }
 
-    /// Deletes a specific datapoint for a user's goal.
+    /// Deletes a specific datapoint for the user's goal.
     ///
     /// # Arguments
-    /// * `username` - The username of the user.
     /// * `goal` - The name of the goal.
     /// * `datapoint_id` - The ID of the datapoint to delete.
     ///
@@ -164,11 +133,13 @@ impl BeeminderClient {
     /// Returns an error if the HTTP request fails or if the response cannot be parsed.
     pub async fn delete_datapoint(
         &self,
-        username: &str,
         goal: &str,
         datapoint_id: &str,
     ) -> Result<Datapoint, Error> {
-        let endpoint = format!("users/{username}/goals/{goal}/datapoints/{datapoint_id}.json");
+        let endpoint = format!(
+            "users/{}/goals/{goal}/datapoints/{datapoint_id}.json",
+            self.username
+        );
         let query = vec![("auth_token", self.api_key.as_str())];
 
         let response = self
@@ -182,21 +153,21 @@ impl BeeminderClient {
         response.json().await.map_err(Error::from)
     }
 
-    /// Retrieves all goals for a user.
+    /// Retrieves all goals for the user.
     ///
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
-    pub async fn get_goals(&self, username: &str) -> Result<Vec<GoalSummary>, Error> {
-        self.request(&format!("users/{username}/goals.json"), None)
-            .await
+    pub async fn get_goals(&self) -> Result<Vec<GoalSummary>, Error> {
+        let endpoint = format!("users/{}/goals.json", self.username);
+        self.get(&endpoint, &()).await
     }
 
-    /// Retrieves archived goals for a user.
+    /// Retrieves archived goals for the user.
     ///
     /// # Errors
     /// Returns an error if the HTTP request fails or response cannot be parsed.
-    pub async fn get_archived_goals(&self, username: &str) -> Result<Vec<GoalSummary>, Error> {
-        self.request(&format!("users/{username}/goals/archived.json"), None)
-            .await
+    pub async fn get_archived_goals(&self) -> Result<Vec<GoalSummary>, Error> {
+        let endpoint = format!("users/{}/goals/archived.json", self.username);
+        self.get(&endpoint, &()).await
     }
 }

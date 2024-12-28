@@ -9,21 +9,18 @@ async fn main() {
         env::var("BEEMINDER_API_KEY").expect("BEEMINDER_API_KEY environment variable not set");
 
     let client = BeeminderClient::new(api_key);
-    match client.get_user("me").await {
+    match client.get_user().await {
         Ok(user) => println!("{user:#?}"),
         Err(e) => println!("{e:#?}"),
     }
 
     let since = datetime!(2024-12-13 20:00 UTC);
-    match client.get_user_diff("me", since).await {
+    match client.get_user_diff(since).await {
         Ok(user) => println!("{user:#?}"),
         Err(e) => println!("{e:#?}"),
     }
 
-    match client
-        .get_datapoints("me", "meditation", None, Some(10))
-        .await
-    {
+    match client.get_datapoints("meditation", None, Some(2)).await {
         Ok(datapoints) => println!("{datapoints:#?}"),
         Err(e) => println!("{e:#?}"),
     }
@@ -31,7 +28,7 @@ async fn main() {
     let d = CreateDatapoint::new(1.0)
         .with_comment("Test #hashtag datapoint")
         .with_requestid("unique-id-42");
-    match client.create_datapoint("me", "meditation", &d).await {
+    match client.create_datapoint("meditation", &d).await {
         Ok(datapoint) => println!("Added: {datapoint:#?}"),
         Err(e) => println!("{e:#?}"),
     }

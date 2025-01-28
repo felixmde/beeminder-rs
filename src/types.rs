@@ -171,6 +171,82 @@ impl CreateDatapoint {
     }
 }
 
+/// Parameters for updating an existing datapoint
+#[derive(Debug, Clone, Serialize)]
+pub struct UpdateDatapoint {
+    /// ID of the datapoint to update
+    #[serde(skip_serializing)]
+    pub id: String,
+    /// Optional new timestamp for the datapoint
+    #[serde(
+        with = "time::serde::timestamp::option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub timestamp: Option<OffsetDateTime>,
+    /// Optional new value
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value: Option<f64>,
+    /// Optional new comment
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comment: Option<String>,
+}
+
+impl From<&Datapoint> for UpdateDatapoint {
+    fn from(datapoint: &Datapoint) -> Self {
+        Self {
+            id: datapoint.id.clone(),
+            timestamp: Some(datapoint.timestamp),
+            value: Some(datapoint.value),
+            comment: datapoint.comment.clone(),
+        }
+    }
+}
+
+impl UpdateDatapoint {
+    /// Creates an empty update for the given datapoint ID
+    #[must_use]
+    pub fn new(id: impl Into<String>) -> Self {
+        Self {
+            id: id.into(),
+            timestamp: None,
+            value: None,
+            comment: None,
+        }
+    }
+
+    /// Creates an update from an existing datapoint with no changes
+    #[must_use]
+    pub fn from_datapoint(datapoint: &Datapoint) -> Self {
+        Self {
+            id: datapoint.id.clone(),
+            timestamp: Some(datapoint.timestamp),
+            value: Some(datapoint.value),
+            comment: datapoint.comment.clone(),
+        }
+    }
+
+    /// Sets a new timestamp
+    #[must_use]
+    pub fn with_timestamp(mut self, timestamp: OffsetDateTime) -> Self {
+        self.timestamp = Some(timestamp);
+        self
+    }
+
+    /// Sets a new value
+    #[must_use]
+    pub fn with_value(mut self, value: f64) -> Self {
+        self.value = Some(value);
+        self
+    }
+
+    /// Sets a new comment
+    #[must_use]
+    pub fn with_comment(mut self, comment: &str) -> Self {
+        self.comment = Some(comment.to_string());
+        self
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UserInfo {
     /// Username of the Beeminder account

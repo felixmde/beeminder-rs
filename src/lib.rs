@@ -1,5 +1,7 @@
 pub mod types;
-use crate::types::{CreateDatapoint, Datapoint, GoalSummary, UserInfo, UserInfoDiff};
+use crate::types::{
+    CreateDatapoint, Datapoint, GoalSummary, UpdateDatapoint, UserInfo, UserInfoDiff,
+};
 use reqwest::Client;
 use time::OffsetDateTime;
 
@@ -123,7 +125,37 @@ impl BeeminderClient {
         self.post(&endpoint, datapoint).await
     }
 
-    /// Deletes a specific datapoint for the user's goal.
+    /// Updates an existing datapoint for a goal.
+    ///
+    /// # Arguments
+    /// * `goal` - The slug/name of the goal to update
+    /// * `update` - The datapoint update containing the ID and fields to update
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or if the response cannot be parsed
+    pub async fn update_datapoint(
+        &self,
+        goal: &str,
+        update: &UpdateDatapoint,
+    ) -> Result<Datapoint, Error> {
+        let endpoint = format!(
+            "users/{}/goals/{}/datapoints/{}.json",
+            self.username, goal, update.id
+        );
+
+        let response = self
+            .client
+            .put(format!("{}{}", self.base_url, endpoint))
+            .query(&[("auth_token", self.api_key.as_str())])
+            .query(update)
+            .send()
+            .await?
+            .error_for_status()?;
+
+        response.json().await.map_err(Error::from)
+    }
+
+    /// Deletes a specific datapoint for a goal.
     ///
     /// # Arguments
     /// * `goal` - The name of the goal.

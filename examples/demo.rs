@@ -1,7 +1,7 @@
-use beeminder::types::CreateDatapoint;
+use beeminder::types::{CreateDatapoint, UpdateDatapoint};
 use beeminder::BeeminderClient;
 use std::env;
-use time::macros::datetime;
+use time::{Duration, OffsetDateTime};
 
 #[tokio::main]
 async fn main() {
@@ -14,22 +14,44 @@ async fn main() {
         Err(e) => println!("{e:#?}"),
     }
 
-    let since = datetime!(2024-12-13 20:00 UTC);
+    let since = OffsetDateTime::now_utc() - Duration::days(2);
     match client.get_user_diff(since).await {
         Ok(user) => println!("{user:#?}"),
         Err(e) => println!("{e:#?}"),
     }
 
-    match client.get_datapoints("meditation", None, Some(2)).await {
-        Ok(datapoints) => println!("{datapoints:#?}"),
+    let new_datapoint = CreateDatapoint::new(20.0)
+        .with_comment("I did some pushups!")
+        .with_requestid("unique-pushup-id-42");
+    match client.create_datapoint("pushups", &new_datapoint).await {
+        Ok(datapoint) => println!("Added: {datapoint:#?}"),
         Err(e) => println!("{e:#?}"),
     }
 
-    let d = CreateDatapoint::new(1.0)
-        .with_comment("Test #hashtag datapoint")
-        .with_requestid("unique-id-42");
-    match client.create_datapoint("meditation", &d).await {
-        Ok(datapoint) => println!("Added: {datapoint:#?}"),
-        Err(e) => println!("{e:#?}"),
+    let goal_name = "pushups";
+    match client.get_datapoints(&goal_name, None, Some(3)).await {
+        Ok(datapoints) => {
+            if let Some(first_datapoint) = datapoints.first() {
+                let update_datapoint = UpdateDatapoint::from(first_datapoint)
+                    .with_value(40.0)
+                    .with_comment("Much better.");
+
+                match client.update_datapoint(&goal_name, &update_datapoint).await {
+                    Ok(datapoint) => println!("Updated: {datapoint:#?}"),
+                    Err(e) => println!("Update error: {e:#?}"),
+                }
+
+                match client
+                    .delete_datapoint(&goal_name, &update_datapoint.id)
+                    .await
+                {
+                    Ok(datapoint) => println!("Deleted: {datapoint:#?}"),
+                    Err(e) => println!("Delete error: {e:#?}"),
+                }
+            } else {
+                println!("No datapoints found");
+            }
+        }
+        Err(e) => println!("Get datapoints error: {e:#?}"),
     }
 }

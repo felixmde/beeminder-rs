@@ -119,7 +119,7 @@ pub struct Datapoint {
 
 /// Parameters for creating or updating a datapoint
 #[must_use]
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDatapoint {
     /// The value to record
     pub value: f64,
@@ -172,10 +172,9 @@ impl CreateDatapoint {
 }
 
 /// Parameters for updating an existing datapoint
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateDatapoint {
     /// ID of the datapoint to update
-    #[serde(skip_serializing)]
     pub id: String,
     /// Optional new timestamp for the datapoint
     #[serde(

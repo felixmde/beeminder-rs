@@ -29,20 +29,23 @@ async fn main() {
     }
 
     let goal_name = "pushups";
-    match client.get_datapoints(&goal_name, None, Some(3)).await {
+    match client
+        .get_datapoints(goal_name, None, Some(3), None, None)
+        .await
+    {
         Ok(datapoints) => {
             if let Some(first_datapoint) = datapoints.first() {
                 let update_datapoint = UpdateDatapoint::from(first_datapoint)
                     .with_value(40.0)
                     .with_comment("Much better.");
 
-                match client.update_datapoint(&goal_name, &update_datapoint).await {
+                match client.update_datapoint(goal_name, &update_datapoint).await {
                     Ok(datapoint) => println!("Updated: {datapoint:#?}"),
                     Err(e) => println!("Update error: {e:#?}"),
                 }
 
                 match client
-                    .delete_datapoint(&goal_name, &update_datapoint.id)
+                    .delete_datapoint(goal_name, &update_datapoint.id)
                     .await
                 {
                     Ok(datapoint) => println!("Deleted: {datapoint:#?}"),

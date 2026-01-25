@@ -1,2 +1,5 @@
+.github
+/docs
 /target
+CLAUDE.md
 beeminder_api.txt

@@ -1,113 +1,24 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use time::OffsetDateTime;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Goal {
-    /// Unique identifier as hex string, useful when slugs change
-    pub id: String,
-    /// Final part of goal URL, used as identifier (e.g., "weight" in beeminder.com/alice/weight)  
-    pub slug: String,
-    /// User-specified title for the goal
-    pub title: String,
-    /// List of datapoints for this goal
-    pub datapoints: Vec<Datapoint>,
-    /// Summary of what needs to be done by when, e.g., "+2 within 1 day".
-    pub limsum: String,
-    /// Unix timestamp of the last time this goal was updated
-    #[serde(with = "time::serde::timestamp")]
-    pub updated_at: OffsetDateTime,
-    /// User-provided description of what exactly they are committing to
-    pub fineprint: Option<String>,
-    /// Label for the y-axis of the graph
-    pub yaxis: String,
-    /// Unix timestamp of the goal date
-    #[serde(with = "time::serde::timestamp::option")]
-    pub goaldate: Option<OffsetDateTime>,
-    /// Goal value - the number the bright red line will eventually reach
-    pub goalval: Option<f64>,
-    /// Slope of the (final section of the) bright red line, paired with runits
-    pub rate: Option<f64>,
-    /// Rate units: y/m/w/d/h for yearly/monthly/weekly/daily/hourly
-    pub runits: String,
-    /// URL for the goal's graph SVG
-    pub svg_url: String,
-    /// URL for the goal's graph image
-    pub graph_url: String,
-    /// URL for the goal's graph thumbnail image
-    pub thumb_url: String,
-    /// Name of automatic data source, null for manual goals
-    pub autodata: Option<String>,
-    /// Type of goal (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
-    pub goal_type: String,
-    /// Unix timestamp of derailment if nothing is reported
-    #[serde(with = "time::serde::timestamp")]
-    pub losedate: OffsetDateTime,
-    /// Key for sorting goals by decreasing urgency
-    pub urgencykey: String,
-    /// Whether the graph is currently being updated
-    pub queued: bool,
-    /// Whether goal requires login to view
-    pub secret: bool,
-    /// Whether datapoints require login to view
-    pub datapublic: bool,
-    /// Amount pledged in USD on the goal
-    pub pledge: f64,
-    /// Number of days until derailment (0 if in beemergency)
-    pub safebuf: i32,
-    /// Unix timestamp of the last (explicitly entered) datapoint
-    #[serde(with = "time::serde::timestamp")]
-    pub lastday: OffsetDateTime,
-}
+// =============================================================================
+// EFFICIENT TYPES - Lean structs with commonly-needed fields
+// =============================================================================
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GoalSummary {
-    /// Final part of goal URL, used as identifier (e.g., "weight" in beeminder.com/alice/weight)
-    pub slug: String,
-    /// User-specified title for the goal
-    pub title: String,
-    /// Type of goal (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
-    pub goal_type: String,
-    /// Summary of what needs to be done by when, e.g., "+2 within 1 day".
-    pub limsum: String,
-    /// URL for the goal's graph SVG
-    pub svg_url: String,
-    /// URL for the goal's graph image
-    pub graph_url: String,
-    /// URL for the goal's graph thumbnail image
-    pub thumb_url: String,
-    /// Unix timestamp of derailment if nothing is reported
-    #[serde(with = "time::serde::timestamp")]
-    pub losedate: OffsetDateTime,
-    /// Unix timestamp of the goal date
-    #[serde(with = "time::serde::timestamp::option")]
-    pub goaldate: Option<OffsetDateTime>,
-    /// Goal value - the number the bright red line will eventually reach
-    pub goalval: Option<f64>,
-    /// Slope of the (final section of the) bright red line
-    pub rate: Option<f64>,
-    /// Unix timestamp of the last time this goal was updated
-    #[serde(with = "time::serde::timestamp")]
-    pub updated_at: OffsetDateTime,
-    /// Whether the graph is currently being updated
-    pub queued: bool,
-    /// Number of days until derailment (0 if in beemergency)
-    pub safebuf: i32,
-    /// Unix timestamp of the last (explicitly entered) datapoint
-    #[serde(with = "time::serde::timestamp")]
-    pub lastday: OffsetDateTime,
-}
-
+/// Efficient datapoint representation with 7 commonly-needed fields.
+/// Use `DatapointFull` if you need all API fields.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Datapoint {
     /// A unique ID, used to identify a datapoint when deleting or editing it
     pub id: String,
+    /// The value measured at this datapoint
+    pub value: f64,
     /// Unix timestamp (in seconds) of the datapoint
     #[serde(with = "time::serde::timestamp")]
     pub timestamp: OffsetDateTime,
     /// Date of the datapoint (e.g., "20150831"), accounts for goal deadlines
     pub daystamp: String,
-    /// The value measured at this datapoint
-    pub value: f64,
     /// Optional comment about the datapoint
     pub comment: Option<String>,
     /// Unix timestamp when this datapoint was entered or last updated
@@ -117,20 +28,378 @@ pub struct Datapoint {
     pub requestid: Option<String>,
 }
 
-/// Parameters for creating or updating a datapoint
+/// Efficient goal representation with ~22 commonly-needed fields.
+/// Use `GoalFull` if you need all API fields.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Goal {
+    // Identification
+    /// Unique identifier as hex string, useful when slugs change
+    pub id: String,
+    /// Final part of goal URL, used as identifier (e.g., "weight" in beeminder.com/alice/weight)
+    pub slug: String,
+    /// User-specified title for the goal
+    pub title: String,
+
+    // Urgency/Status
+    /// Number of days until derailment (0 if in beemergency)
+    #[serde(default)]
+    pub safebuf: i32,
+    /// Unix timestamp of derailment if nothing is reported
+    #[serde(with = "time::serde::timestamp")]
+    pub losedate: OffsetDateTime,
+    /// Summary of what needs to be done by when, e.g., "+2 within 1 day"
+    pub limsum: String,
+
+    // Target info
+    /// Amount pledged in USD on the goal
+    #[serde(default)]
+    pub pledge: f64,
+    /// Goal value - the number the bright red line will eventually reach
+    #[serde(default)]
+    pub goalval: Option<f64>,
+    /// Slope of the (final section of the) bright red line, paired with runits
+    #[serde(default)]
+    pub rate: Option<f64>,
+    /// Unix timestamp of the goal date
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub goaldate: Option<OffsetDateTime>,
+
+    // Type/Display
+    /// Type of goal (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
+    pub goal_type: String,
+    /// Goal units (e.g., "hours", "pushups")
+    #[serde(default)]
+    pub gunits: String,
+    /// Label for the y-axis of the graph
+    pub yaxis: String,
+    /// URL for the goal's graph image
+    pub graph_url: String,
+    /// URL for the goal's graph thumbnail image
+    pub thumb_url: String,
+
+    // State flags
+    /// Whether the goal is frozen/paused
+    #[serde(default)]
+    pub frozen: bool,
+    /// Whether the goal was successfully completed
+    #[serde(default)]
+    pub won: bool,
+    /// Whether the goal is currently off track
+    #[serde(default)]
+    pub lost: bool,
+    /// Whether the graph is currently being updated
+    #[serde(default)]
+    pub queued: bool,
+
+    // Timestamps
+    /// Unix timestamp of the last time this goal was updated
+    #[serde(with = "time::serde::timestamp")]
+    pub updated_at: OffsetDateTime,
+    /// Unix timestamp of the last (explicitly entered) datapoint
+    #[serde(with = "time::serde::timestamp")]
+    pub lastday: OffsetDateTime,
+}
+
+// =============================================================================
+// FULL TYPES - Complete structs with all API fields + catch-all HashMap
+// =============================================================================
+
+/// Full datapoint representation with all API fields.
+/// Core identity fields (id, timestamp, daystamp) are non-optional.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DatapointFull {
+    // Always present (non-optional)
+    /// A unique ID, used to identify a datapoint when deleting or editing it
+    pub id: String,
+    /// Unix timestamp (in seconds) of the datapoint
+    #[serde(with = "time::serde::timestamp")]
+    pub timestamp: OffsetDateTime,
+    /// Date of the datapoint (e.g., "20150831"), accounts for goal deadlines
+    pub daystamp: String,
+
+    // Everything else optional
+    /// The value measured at this datapoint
+    pub value: Option<f64>,
+    /// Optional comment about the datapoint
+    pub comment: Option<String>,
+    /// Unix timestamp when this datapoint was entered or last updated
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub updated_at: Option<OffsetDateTime>,
+    /// Echo of API request ID if provided during creation
+    pub requestid: Option<String>,
+    /// Where the datapoint came from (e.g., "web", "api", "duolingo")
+    pub origin: Option<String>,
+    /// User who created the datapoint (for group goals)
+    pub creator: Option<String>,
+    /// True if this is a system-generated datapoint (e.g., #DERAIL)
+    pub is_dummy: Option<bool>,
+    /// True if this is the initial datapoint added at goal creation
+    pub is_initial: Option<bool>,
+    /// Timestamp when the datapoint was created (ISO 8601 format from API)
+    #[serde(default, with = "time::serde::rfc3339::option")]
+    pub created_at: Option<OffsetDateTime>,
+
+    /// Catch-all for any additional fields from the API
+    #[serde(flatten)]
+    pub extra: HashMap<String, serde_json::Value>,
+}
+
+/// Contract information for a goal (pledge amount and stepdown schedule)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Contract {
+    /// Amount at risk in USD
+    #[serde(default)]
+    pub amount: Option<f64>,
+    /// Scheduled time for pledge stepdown
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub stepdown_at: Option<OffsetDateTime>,
+}
+
+/// Full goal representation with all API fields.
+/// Core identity fields (id, slug) are non-optional.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GoalFull {
+    // Always present (non-optional)
+    /// Unique identifier as hex string, useful when slugs change
+    pub id: String,
+    /// Final part of goal URL, used as identifier
+    pub slug: String,
+
+    // All other documented fields as Option<T>
+    /// User-specified title for the goal
+    pub title: Option<String>,
+    /// Number of days until derailment (0 if in beemergency)
+    pub safebuf: Option<i32>,
+    /// Unix timestamp of derailment if nothing is reported
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub losedate: Option<OffsetDateTime>,
+    /// Summary of what needs to be done by when
+    pub limsum: Option<String>,
+    /// Amount pledged in USD on the goal
+    pub pledge: Option<f64>,
+    /// Goal value - the number the bright red line will eventually reach
+    pub goalval: Option<f64>,
+    /// Slope of the (final section of the) bright red line
+    pub rate: Option<f64>,
+    /// Unix timestamp of the goal date
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub goaldate: Option<OffsetDateTime>,
+    /// Type of goal (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
+    pub goal_type: Option<String>,
+    /// Goal units (e.g., "hours", "pushups")
+    pub gunits: Option<String>,
+    /// Label for the y-axis of the graph
+    pub yaxis: Option<String>,
+    /// URL for the goal's graph image
+    pub graph_url: Option<String>,
+    /// URL for the goal's graph thumbnail image
+    pub thumb_url: Option<String>,
+    /// URL for the goal's graph SVG
+    pub svg_url: Option<String>,
+    /// Whether the goal is frozen/paused
+    pub frozen: Option<bool>,
+    /// Whether the goal was successfully completed
+    pub won: Option<bool>,
+    /// Whether the goal is currently off track
+    pub lost: Option<bool>,
+    /// Whether the graph is currently being updated
+    pub queued: Option<bool>,
+    /// Whether goal requires login to view
+    pub secret: Option<bool>,
+    /// Whether datapoints require login to view
+    pub datapublic: Option<bool>,
+    /// Unix timestamp of the last time this goal was updated
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub updated_at: Option<OffsetDateTime>,
+    /// Unix timestamp of the last (explicitly entered) datapoint
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub lastday: Option<OffsetDateTime>,
+    /// User-provided description of what exactly they are committing to
+    pub fineprint: Option<String>,
+    /// Name of automatic data source, null for manual goals
+    pub autodata: Option<String>,
+    /// Key for sorting goals by decreasing urgency
+    pub urgencykey: Option<String>,
+    /// Whether the goal is cumulative (auto-summing)
+    pub kyoom: Option<bool>,
+    /// Whether to treat zeros as odometer resets
+    pub odom: Option<bool>,
+    /// How datapoints on the same day are aggregated
+    pub aggday: Option<String>,
+    /// Whether to plot all datapoints
+    pub plotall: Option<bool>,
+    /// Whether to show a steppy line
+    pub steppy: Option<bool>,
+    /// Whether to show a rosy line
+    pub rosy: Option<bool>,
+    /// Whether to show a moving average
+    pub movingav: Option<bool>,
+    /// Whether to show the aura
+    pub aura: Option<bool>,
+    /// Number of datapoints
+    pub numpts: Option<i64>,
+    /// Distance from the red line to today's datapoint
+    pub delta: Option<f64>,
+    /// Value needed to get one more day of safety buffer
+    pub safebump: Option<f64>,
+    /// Max days of safety buffer (autoratchet setting)
+    pub autoratchet: Option<f64>,
+    /// Whether to assume integer values
+    pub integery: Option<bool>,
+    /// Seconds offset from midnight for deadline
+    pub deadline: Option<i64>,
+    /// Days before derailing to start reminders
+    pub leadtime: Option<i64>,
+    /// Rate units: y/m/w/d/h for yearly/monthly/weekly/daily/hourly
+    pub runits: Option<String>,
+    /// Unix timestamp of the initial day
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub initday: Option<OffsetDateTime>,
+    /// Initial value
+    pub initval: Option<f64>,
+    /// Unix timestamp of the current day
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub curday: Option<OffsetDateTime>,
+    /// Current value
+    pub curval: Option<f64>,
+    /// Current rate
+    pub currate: Option<f64>,
+    /// Red line ahead
+    pub rah: Option<f64>,
+    /// Road data
+    pub road: Option<serde_json::Value>,
+    /// All road data
+    pub roadall: Option<serde_json::Value>,
+    /// Full road data
+    pub fullroad: Option<serde_json::Value>,
+    /// Contract/pledge information
+    pub contract: Option<Contract>,
+    /// List of goal tags
+    pub tags: Option<Vec<String>>,
+    /// List of datapoints for this goal
+    pub datapoints: Option<Vec<DatapointFull>>,
+    /// The last datapoint entered
+    pub last_datapoint: Option<DatapointFull>,
+
+    /// Catch-all for any additional fields from the API
+    #[serde(flatten)]
+    pub extra: HashMap<String, serde_json::Value>,
+}
+
+// =============================================================================
+// ALWAYS-FULL TYPES - No efficient variant needed
+// =============================================================================
+
+/// Summary information for a goal (used in goal lists)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GoalSummary {
+    /// Final part of goal URL, used as identifier
+    pub slug: String,
+    /// User-specified title for the goal
+    pub title: String,
+    /// Type of goal (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
+    pub goal_type: String,
+    /// Summary of what needs to be done by when
+    pub limsum: String,
+    /// URL for the goal's graph SVG
+    pub svg_url: String,
+    /// URL for the goal's graph image
+    pub graph_url: String,
+    /// URL for the goal's graph thumbnail image
+    pub thumb_url: String,
+    /// Unix timestamp of derailment if nothing is reported
+    #[serde(with = "time::serde::timestamp")]
+    pub losedate: OffsetDateTime,
+    /// Unix timestamp of the goal date
+    #[serde(default, with = "time::serde::timestamp::option")]
+    pub goaldate: Option<OffsetDateTime>,
+    /// Goal value - the number the bright red line will eventually reach
+    #[serde(default)]
+    pub goalval: Option<f64>,
+    /// Slope of the (final section of the) bright red line
+    #[serde(default)]
+    pub rate: Option<f64>,
+    /// Unix timestamp of the last time this goal was updated
+    #[serde(with = "time::serde::timestamp")]
+    pub updated_at: OffsetDateTime,
+    /// Whether the graph is currently being updated
+    #[serde(default)]
+    pub queued: bool,
+    /// Number of days until derailment (0 if in beemergency)
+    #[serde(default)]
+    pub safebuf: i32,
+    /// Unix timestamp of the last (explicitly entered) datapoint
+    #[serde(with = "time::serde::timestamp")]
+    pub lastday: OffsetDateTime,
+
+    /// Catch-all for any additional fields from the API
+    #[serde(flatten)]
+    pub extra: HashMap<String, serde_json::Value>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfo {
+    /// Username of the Beeminder account
+    pub username: String,
+    /// User's timezone, e.g. "America/Los_Angeles"
+    pub timezone: String,
+    /// Timestamp when this user's information was last updated
+    #[serde(with = "time::serde::timestamp")]
+    pub updated_at: OffsetDateTime,
+    /// Current urgency load (priority level of pending tasks)
+    pub urgency_load: u64,
+    /// Whether the user has an unpaid subscription
+    pub deadbeat: bool,
+    /// List of the user's goal slugs
+    pub goals: Vec<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UserInfoDiff {
+    /// Username of the Beeminder account
+    pub username: String,
+    /// User's timezone, e.g. "America/Los_Angeles"
+    pub timezone: String,
+    /// Timestamp when this user's information was last updated
+    #[serde(with = "time::serde::timestamp")]
+    pub updated_at: OffsetDateTime,
+    /// List of user's goals with detailed information and datapoints
+    pub goals: Vec<GoalFull>,
+    /// List of goals that have been deleted since the diff timestamp
+    pub deleted_goals: Vec<DeletedGoal>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DeletedGoal {
+    /// ID of the deleted goal
+    pub id: String,
+}
+
+// =============================================================================
+// REQUEST TYPES - For creating and updating data
+// =============================================================================
+
+/// Parameters for creating a datapoint
 #[must_use]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateDatapoint {
     /// The value to record
     pub value: f64,
     /// Timestamp for the datapoint, defaults to now if None
-    #[serde(with = "time::serde::timestamp::option")]
+    #[serde(
+        default,
+        with = "time::serde::timestamp::option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub timestamp: Option<OffsetDateTime>,
     /// Date string (e.g. "20150831"), alternative to timestamp
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub daystamp: Option<String>,
     /// Optional comment
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub comment: Option<String>,
     /// Optional unique identifier for deduplication/updates
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub requestid: Option<String>,
 }
 
@@ -178,6 +447,7 @@ pub struct UpdateDatapoint {
     pub id: String,
     /// Optional new timestamp for the datapoint
     #[serde(
+        default,
         with = "time::serde::timestamp::option",
         skip_serializing_if = "Option::is_none"
     )]
@@ -244,42 +514,4 @@ impl UpdateDatapoint {
         self.comment = Some(comment.to_string());
         self
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserInfo {
-    /// Username of the Beeminder account
-    pub username: String,
-    /// User's timezone, e.g. "America/Los_Angeles"
-    pub timezone: String,
-    /// Timestamp when this user's information was last updated
-    #[serde(with = "time::serde::timestamp")]
-    pub updated_at: OffsetDateTime,
-    /// Current urgency load (priority level of pending tasks)
-    pub urgency_load: u64,
-    /// Whether the user has an unpaid subscription
-    pub deadbeat: bool,
-    /// List of the user's goal slugs
-    pub goals: Vec<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserInfoDiff {
-    /// Username of the Beeminder account
-    pub username: String,
-    /// User's timezone, e.g. "America/Los_Angeles"
-    pub timezone: String,
-    /// Timestamp when this user's information was last updated
-    #[serde(with = "time::serde::timestamp")]
-    pub updated_at: OffsetDateTime,
-    /// List of user's goals with detailed information and datapoints
-    pub goals: Vec<Goal>,
-    /// List of goals that have been deleted since the diff timestamp
-    pub deleted_goals: Vec<DeletedGoal>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct DeletedGoal {
-    /// ID of the deleted goal
-    pub id: String,
 }

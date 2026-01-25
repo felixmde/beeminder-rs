@@ -1,0 +1,131 @@
+#compdef beeline
+
+# Beeline ZSH completion with dynamic goal names
+# Install: Place in fpath or source directly
+
+autoload -U is-at-least
+
+# Cache for goal names (expires after 5 minutes)
+typeset -g _beeline_goals_cache
+typeset -g _beeline_goals_cache_time
+
+_beeline_goals() {
+    local current_time=$(date +%s)
+    local cache_ttl=300  # 5 minutes
+
+    # Check if cache is valid
+    if [[ -n "$_beeline_goals_cache" ]] && \
+       [[ -n "$_beeline_goals_cache_time" ]] && \
+       (( current_time - _beeline_goals_cache_time < cache_ttl )); then
+        echo "$_beeline_goals_cache"
+        return
+    fi
+
+    # Fetch fresh goals
+    local goals
+    goals=$(beeline list-goals 2>/dev/null)
+    if [[ $? -eq 0 && -n "$goals" ]]; then
+        _beeline_goals_cache="$goals"
+        _beeline_goals_cache_time=$current_time
+        echo "$goals"
+    fi
+}
+
+_beeline_complete_goals() {
+    local goals
+    goals=("${(@f)$(_beeline_goals)}")
+    if [[ ${#goals[@]} -gt 0 ]]; then
+        _describe -t goals 'beeminder goals' goals
+    fi
+}
+
+_beeline() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+        '-h[Print help]' \
+        '--help[Print help]' \
+        ":: :_beeline_commands" \
+        "*::: :->beeline" \
+        && ret=0
+
+    case $state in
+    (beeline)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:beeline-command-$line[1]:"
+        case $line[1] in
+            (list)
+                _arguments "${_arguments_options[@]}" : \
+                    '-h[Print help]' \
+                    '--help[Print help]' \
+                    && ret=0
+                ;;
+            (add)
+                _arguments "${_arguments_options[@]}" : \
+                    '-h[Print help]' \
+                    '--help[Print help]' \
+                    ':goal -- The name of the goal:_beeline_complete_goals' \
+                    ':value -- The value of the datapoint:' \
+                    '::comment -- An optional comment for the datapoint:' \
+                    && ret=0
+                ;;
+            (edit)
+                _arguments "${_arguments_options[@]}" : \
+                    '-h[Print help]' \
+                    '--help[Print help]' \
+                    ':goal -- The name of the goal:_beeline_complete_goals' \
+                    && ret=0
+                ;;
+            (backup)
+                _arguments "${_arguments_options[@]}" : \
+                    '-h[Print help]' \
+                    '--help[Print help]' \
+                    '::filename -- Output file name:_files' \
+                    && ret=0
+                ;;
+            (help)
+                _arguments "${_arguments_options[@]}" : \
+                    ":: :_beeline_help_commands" \
+                    && ret=0
+                ;;
+        esac
+        ;;
+    esac
+}
+
+_beeline_commands() {
+    local commands; commands=(
+        'list:List all goals'
+        'add:Add a datapoint'
+        'edit:Edit recent datapoints for a goal'
+        'backup:Backup all user data to JSON file'
+        'help:Print this message or the help of the given subcommand(s)'
+    )
+    _describe -t commands 'beeline commands' commands "$@"
+}
+
+_beeline_help_commands() {
+    local commands; commands=(
+        'list:List all goals'
+        'add:Add a datapoint'
+        'edit:Edit recent datapoints for a goal'
+        'backup:Backup all user data to JSON file'
+    )
+    _describe -t commands 'beeline help commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_beeline" ]; then
+    _beeline "$@"
+else
+    compdef _beeline beeline
+fi

@@ -1,0 +1,15 @@
+[package]
+name = "beetui"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "beetui"
+path = "src/main.rs"
+
+[dependencies]
+beeminder = { path = "../beeminder" }
+ratatui = "0.29"
+crossterm = "0.28"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+anyhow = "1.0"

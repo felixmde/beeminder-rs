@@ -1,0 +1,21 @@
+[package]
+name = "beeminder"
+version = "0.1.0"
+edition = "2021"
+description = "Async Rust client for the Beeminder API"
+license = "MIT"
+repository = "https://github.com/felixmde/beeminder-rs"
+
+[lib]
+name = "beeminder"
+path = "src/lib.rs"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+time = { version = "0.3", features = ["serde", "parsing", "formatting"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

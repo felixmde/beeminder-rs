@@ -9,6 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 beeminder = { path = "../beeminder" }
+beeconfig = { path = "../beeconfig" }
 anyhow = "1.0"
 clap = { version = "4", features = ["derive"] }
 clap_complete = "4"

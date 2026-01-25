@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use beeconfig::BeeConfig;
 use beeminder::types::{CreateDatapoint, GoalSummary};
 use beeminder::BeeminderClient;
 use clap::{CommandFactory, Parser, Subcommand};
@@ -84,8 +85,11 @@ fn format_goal(goal: &GoalSummary) -> String {
 }
 
 fn get_client() -> Result<BeeminderClient> {
-    let api_key = std::env::var("BEEMINDER_API_KEY")
-        .with_context(|| "Please create environment variable BEEMINDER_API_KEY".to_string())?;
+    let config =
+        BeeConfig::load_or_onboard().with_context(|| "Failed to load beeminder config")?;
+    let api_key = config
+        .api_key()
+        .with_context(|| "Missing api_key in beeminder config")?;
     Ok(BeeminderClient::new(api_key))
 }
 

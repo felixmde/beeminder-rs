@@ -31,7 +31,7 @@ beeminder = { git = "https://github.com/felixmde/beeminder-rs" }
 
 ### beeline CLI
 
-Requires the `BEEMINDER_API_KEY` environment variable.
+Requires a Beeminder API key. You can supply it via the config file (recommended), an env var, or a command.
 
 ```bash
 # List all goals (sorted by urgency, shows today's entries)
@@ -47,6 +47,18 @@ beeline edit meditation
 # Backup all user data to JSON
 beeline backup
 beeline backup mybackup.json
+```
+
+Config file examples (stored in your standard OS config location for `beeminder`):
+
+```toml
+api_key = "YOUR_KEY"
+
+# or
+api_key = { env = "BEEMINDER_API_KEY" }
+
+# or
+api_key = { cmd = "cat ~/.beeminder_key" }
 ```
 
 ### beeminder library

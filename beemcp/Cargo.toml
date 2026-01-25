@@ -9,6 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 beeminder = { path = "../beeminder" }
+beeconfig = { path = "../beeconfig" }
 rmcp = "0.1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 serde = { version = "1.0", features = ["derive"] }

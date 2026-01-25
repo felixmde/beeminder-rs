@@ -9,6 +9,7 @@ path = "src/main.rs"
 
 [dependencies]
 beeminder = { path = "../beeminder" }
+beeconfig = { path = "../beeconfig" }
 ratatui = "0.29"
 crossterm = "0.28"
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }

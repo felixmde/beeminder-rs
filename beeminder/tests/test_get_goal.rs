@@ -12,7 +12,7 @@ async fn test_get_goal_valid() {
 
     assert_eq!(goal.id, "abc123def456");
     assert_eq!(goal.slug, "exercise");
-    assert_eq!(goal.pledge, 5.0);
+    assert!((goal.pledge - 5.0).abs() < f64::EPSILON);
     assert!(!goal.frozen);
 }
 

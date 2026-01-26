@@ -94,8 +94,7 @@ fn query_value_to_string(value: &serde_json::Value) -> Option<String> {
         serde_json::Value::String(value) => Some(value.clone()),
         serde_json::Value::Number(value) => Some(value.to_string()),
         serde_json::Value::Bool(value) => Some(value.to_string()),
-        serde_json::Value::Null => None,
-        serde_json::Value::Array(_) | serde_json::Value::Object(_) => None,
+        serde_json::Value::Null | serde_json::Value::Array(_) | serde_json::Value::Object(_) => None,
     }
 }
 
@@ -162,8 +161,7 @@ fn looks_like_json(value: &str) -> bool {
         .trim_start()
         .chars()
         .next()
-        .map(|first| first == '{' || first == '[')
-        .unwrap_or(false)
+        .is_some_and(|first| first == '{' || first == '[')
 }
 
 fn form_body_value(request: &Request, key: &str) -> Option<String> {

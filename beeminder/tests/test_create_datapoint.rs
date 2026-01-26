@@ -17,6 +17,6 @@ async fn test_create_datapoint_valid() {
         .unwrap();
 
     assert_eq!(result.id, "dp_new_12345");
-    assert_eq!(result.value, 2.5);
+    assert!((result.value - 2.5).abs() < f64::EPSILON);
     assert_eq!(result.comment, Some("Test datapoint".to_string()));
 }

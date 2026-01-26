@@ -13,7 +13,7 @@ async fn test_create_goal_valid() {
     let mut goal = CreateGoal::new("testgoal", "Test Goal", "hustler");
     goal.gunits = Some("units".to_string());
     goal.rate = Some(1.0);
-    goal.goaldate = Some(OffsetDateTime::from_unix_timestamp(1705000000).unwrap());
+    goal.goaldate = Some(OffsetDateTime::from_unix_timestamp(1_705_000_000).unwrap());
 
     let result = client.create_goal(&goal).await;
     assert!(result.is_ok());

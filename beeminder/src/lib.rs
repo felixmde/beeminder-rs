@@ -1,3 +1,5 @@
+#![allow(clippy::multiple_crate_versions)]
+
 pub mod types;
 use crate::types::{
     AuthTokenResponse, CreateAllResponse, CreateDatapoint, CreateGoal, Datapoint, DatapointFull,
@@ -55,7 +57,7 @@ impl BeeminderClient {
     async fn get<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
-        U: serde::ser::Serialize,
+        U: serde::ser::Serialize + Sync,
     {
         let response = self
             .client
@@ -70,7 +72,7 @@ impl BeeminderClient {
     async fn get_no_auth<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
-        U: serde::ser::Serialize,
+        U: serde::ser::Serialize + Sync,
     {
         let response = self
             .client
@@ -84,7 +86,7 @@ impl BeeminderClient {
     async fn post<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
-        U: serde::ser::Serialize,
+        U: serde::ser::Serialize + Sync,
     {
         let response = self
             .client
@@ -99,7 +101,7 @@ impl BeeminderClient {
     async fn put<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
-        U: serde::ser::Serialize,
+        U: serde::ser::Serialize + Sync,
     {
         let response = self
             .client
@@ -114,7 +116,7 @@ impl BeeminderClient {
     async fn delete<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
-        U: serde::ser::Serialize,
+        U: serde::ser::Serialize + Sync,
     {
         let response = self
             .client
@@ -149,7 +151,7 @@ impl BeeminderClient {
     /// Enables emaciated mode, stripping road/roadall/fullroad from goal responses.
     /// Default is false.
     #[must_use]
-    pub fn with_emaciated(mut self, emaciated: bool) -> Self {
+    pub const fn with_emaciated(mut self, emaciated: bool) -> Self {
         self.emaciated = emaciated;
         self
     }

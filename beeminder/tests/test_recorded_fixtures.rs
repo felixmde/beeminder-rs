@@ -46,7 +46,7 @@ async fn recorded_get_auth_token_no_auth() {
 async fn recorded_get_user_diff_valid() {
     let mock = recorded_mock("user/get_user_diff_valid.json").await;
     let client = mock.client();
-    let diff_since = OffsetDateTime::from_unix_timestamp(1769372923).unwrap();
+    let diff_since = OffsetDateTime::from_unix_timestamp(1_769_372_923).unwrap();
     let result = client.get_user_diff(diff_since).await;
     assert!(result.is_ok());
 }
@@ -55,7 +55,7 @@ async fn recorded_get_user_diff_valid() {
 async fn recorded_get_user_diff_no_changes() {
     let mock = recorded_mock("user/get_user_diff_no_changes.json").await;
     let client = mock.client();
-    let diff_since = OffsetDateTime::from_unix_timestamp(1769376660).unwrap();
+    let diff_since = OffsetDateTime::from_unix_timestamp(1_769_376_660).unwrap();
     let result = client.get_user_diff(diff_since).await;
     assert!(result.is_ok());
 }
@@ -123,7 +123,7 @@ async fn recorded_create_goal_valid() {
     let mut goal = CreateGoal::new("apitest1769383656", "REDACTED", "hustler");
     goal.gunits = Some("REDACTED".to_string());
     goal.rate = Some(1.0);
-    goal.goaldate = Some(OffsetDateTime::from_unix_timestamp(1800919656).unwrap());
+    goal.goaldate = Some(OffsetDateTime::from_unix_timestamp(1_800_919_656).unwrap());
     let result = client.create_goal(&goal).await;
     assert!(result.is_ok());
 }

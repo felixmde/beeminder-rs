@@ -31,6 +31,7 @@ pub struct Datapoint {
 /// Efficient goal representation with ~22 commonly-needed fields.
 /// Use `GoalFull` if you need all API fields.
 #[derive(Debug, Serialize, Deserialize)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Goal {
     // Identification
     /// Unique identifier as hex string, useful when slugs change
@@ -341,7 +342,7 @@ pub struct GoalSummary {
 pub struct UserInfo {
     /// Username of the Beeminder account
     pub username: String,
-    /// User's timezone, e.g. "America/Los_Angeles"
+    /// User's timezone, e.g. "`America/Los_Angeles`"
     pub timezone: String,
     /// Timestamp when this user's information was last updated
     #[serde(with = "time::serde::timestamp")]
@@ -358,7 +359,7 @@ pub struct UserInfo {
 pub struct UserInfoDiff {
     /// Username of the Beeminder account
     pub username: String,
-    /// User's timezone, e.g. "America/Los_Angeles"
+    /// User's timezone, e.g. "`America/Los_Angeles`"
     pub timezone: String,
     /// Timestamp when this user's information was last updated
     #[serde(with = "time::serde::timestamp")]
@@ -405,7 +406,7 @@ pub struct CreateDatapoint {
 
 impl CreateDatapoint {
     /// Creates a new datapoint with just a value, all other fields None
-    pub fn new(value: f64) -> Self {
+    pub const fn new(value: f64) -> Self {
         Self {
             value,
             timestamp: None,
@@ -416,7 +417,7 @@ impl CreateDatapoint {
     }
 
     /// Adds a timestamp
-    pub fn with_timestamp(mut self, timestamp: OffsetDateTime) -> Self {
+    pub const fn with_timestamp(mut self, timestamp: OffsetDateTime) -> Self {
         self.timestamp = Some(timestamp);
         self
     }
@@ -496,14 +497,14 @@ impl UpdateDatapoint {
 
     /// Sets a new timestamp
     #[must_use]
-    pub fn with_timestamp(mut self, timestamp: OffsetDateTime) -> Self {
+    pub const fn with_timestamp(mut self, timestamp: OffsetDateTime) -> Self {
         self.timestamp = Some(timestamp);
         self
     }
 
     /// Sets a new value
     #[must_use]
-    pub fn with_value(mut self, value: f64) -> Self {
+    pub const fn with_value(mut self, value: f64) -> Self {
         self.value = Some(value);
         self
     }
@@ -535,17 +536,12 @@ pub enum GoalType {
 impl GoalType {
     /// Canonical string values accepted by the API.
     pub const VALUES: [&'static str; 7] = [
-        "hustler",
-        "biker",
-        "fatloser",
-        "gainer",
-        "inboxer",
-        "drinker",
-        "custom",
+        "hustler", "biker", "fatloser", "gainer", "inboxer", "drinker", "custom",
     ];
 
     /// Returns the canonical API string for this goal type.
-    pub fn as_str(self) -> &'static str {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
         match self {
             Self::Hustler => "hustler",
             Self::Biker => "biker",
@@ -586,7 +582,7 @@ impl std::str::FromStr for GoalType {
     type Err = GoalTypeParseError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
-        let normalized = value.trim().to_ascii_lowercase().replace(&[' ', '-'], "");
+        let normalized = value.trim().to_ascii_lowercase().replace([' ', '-'], "");
         let goal_type = match normalized.as_str() {
             "hustler" => Self::Hustler,
             "biker" => Self::Biker,
@@ -721,6 +717,9 @@ pub struct UpdateGoal {
     /// Whether datapoints require login to view
     #[serde(skip_serializing_if = "Option::is_none")]
     pub datapublic: Option<bool>,
+    /// Whether goal is archived
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub archived: Option<bool>,
 }
 
 impl UpdateGoal {

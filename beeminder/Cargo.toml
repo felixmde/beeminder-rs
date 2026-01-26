@@ -5,6 +5,9 @@ edition = "2021"
 description = "Async Rust client for the Beeminder API"
 license = "MIT"
 repository = "https://github.com/felixmde/beeminder-rs"
+readme = "../README.md"
+keywords = ["beeminder", "api", "client"]
+categories = ["api-bindings", "web-programming::http-client"]
 
 [lib]
 name = "beeminder"

@@ -16,6 +16,6 @@ async fn test_get_datapoints_valid() {
 
     assert_eq!(datapoints.len(), 2);
     assert_eq!(datapoints[0].id, "dp1234567890");
-    assert_eq!(datapoints[0].value, 1.0);
+    assert!((datapoints[0].value - 1.0).abs() < f64::EPSILON);
     assert_eq!(datapoints[0].comment, Some("Morning workout".to_string()));
 }

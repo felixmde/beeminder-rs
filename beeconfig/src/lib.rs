@@ -1,3 +1,5 @@
+#![allow(clippy::multiple_crate_versions)]
+
 use serde::{Deserialize, Serialize};
 use std::io::{self, IsTerminal, Write};
 use std::path::PathBuf;
@@ -54,33 +56,47 @@ pub enum BeeConfigError {
 pub type Result<T> = std::result::Result<T, BeeConfigError>;
 
 impl BeeConfig {
+    /// Loads the config file from the standard OS location.
+    ///
+    /// # Errors
+    /// Returns an error if the config file cannot be read or deserialized.
     pub fn load() -> Result<Self> {
         Ok(confy::load(APP_NAME, None)?)
     }
 
+    /// Loads config or walks the user through onboarding the API key.
+    ///
+    /// # Errors
+    /// Returns an error if the config cannot be loaded, the API key cannot be
+    /// resolved, or onboarding fails (including non-interactive stdin).
     pub fn load_or_onboard() -> Result<Self> {
         let mut config = Self::load()?;
-        match &config.api_key {
-            ApiKey::Literal(value) => {
-                if !value.trim().is_empty() {
-                    return Ok(config);
-                }
-            }
-            _ => {
-                config.api_key.resolve()?;
+        if let ApiKey::Literal(value) = &config.api_key {
+            if !value.trim().is_empty() {
                 return Ok(config);
             }
+        } else {
+            config.api_key.resolve()?;
+            return Ok(config);
         }
 
         config = config.onboard_api_key()?;
         Ok(config)
     }
 
+    /// Stores the config to the standard OS location.
+    ///
+    /// # Errors
+    /// Returns an error if the config cannot be serialized or written.
     pub fn store(&self) -> Result<()> {
         confy::store(APP_NAME, None, self)?;
         Ok(())
     }
 
+    /// Resolves the API key from the configured source.
+    ///
+    /// # Errors
+    /// Returns an error if the API key cannot be resolved or is empty.
     pub fn api_key(&self) -> Result<String> {
         self.api_key.resolve()
     }

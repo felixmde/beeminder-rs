@@ -9,7 +9,7 @@ A Cargo workspace with Rust tools for [Beeminder](https://www.beeminder.com/).
 | **beeminder** | Async Rust client library for the Beeminder API | Usable |
 | **beeline** | CLI for Beeminder (list, add, edit, backup, goal ops, batch, danger actions) | Usable |
 | **beetui** | TUI dashboard | Coming soon |
-| **beemcp** | MCP server for AI assistants | Coming soon |
+| **beemcp** | MCP server for AI assistants | Usable |
 
 ## Installation
 
@@ -56,6 +56,7 @@ beeline goal-create reading "Reading" hustler --goalval 10 --rate 1 --runits w -
 
 # Update a goal
 beeline goal-update reading --title "Reading (books)" --rate 2
+beeline goal-update reading --archived true
 
 # Refresh a goal's graph (autodata refetch)
 beeline goal-refresh reading
@@ -117,6 +118,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## Requirements
 
 - Valid Beeminder API key (get yours at https://www.beeminder.com/api/v1/auth_token.json)
+
+### beemcp (MCP server)
+
+```bash
+cargo run -p beemcp
+```
+
+The MCP server exposes a single `beeminder` tool with an `action` field that mirrors the CLI features (list/add/edit/backup, goal ops, batch datapoints, danger actions).
 
 ## License
 

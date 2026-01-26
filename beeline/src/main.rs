@@ -1,13 +1,16 @@
+#![allow(clippy::multiple_crate_versions)]
+
 use anyhow::{Context, Result};
 use beeconfig::BeeConfig;
 use beeminder::types::{
     CreateAllResponse, CreateDatapoint, CreateGoal, GoalSummary, GoalType, UpdateGoal,
 };
 use beeminder::{BeeminderClient, Error as BeeminderError};
-use clap::{CommandFactory, Parser, Subcommand};
 use clap::error::ErrorKind;
+use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
 use colored::{Color, Colorize};
+use std::fmt::Write;
 use std::fs;
 use std::io::{self, Read};
 use std::process;
@@ -122,6 +125,9 @@ enum Command {
         /// Whether datapoints require login to view (true/false)
         #[arg(long, value_parser = clap::value_parser!(bool))]
         datapublic: Option<bool>,
+        /// Archive or unarchive goal (true/false)
+        #[arg(long, value_parser = clap::value_parser!(bool))]
+        archived: Option<bool>,
     },
     /// Refresh a goal's graph (autodata refetch)
     GoalRefresh {
@@ -222,8 +228,12 @@ fn read_json_input(path: &str) -> Result<String> {
 }
 
 fn format_http_error(status: u16, reason: &str, body: &str) -> String {
-    let reason = if reason.is_empty() { "HTTP error" } else { reason };
-    let mut output = format!("Beeminder API error ({} {}):", status, reason);
+    let reason = if reason.is_empty() {
+        "HTTP error"
+    } else {
+        reason
+    };
+    let mut output = format!("Beeminder API error ({status} {reason}):");
 
     if let Ok(value) = serde_json::from_str::<serde_json::Value>(body) {
         if let Some(errors) = value.get("errors").and_then(|v| v.as_object()) {
@@ -232,20 +242,23 @@ fn format_http_error(status: u16, reason: &str, body: &str) -> String {
                 if let Some(arr) = val.as_array() {
                     for item in arr {
                         if let Some(text) = item.as_str() {
-                            lines.push(format!("{}: {}", key, text.replace('\n', " ")));
+                            let normalized = text.replace('\n', " ");
+                            lines.push(format!("{key}: {normalized}"));
                         } else {
-                            lines.push(format!("{}: {}", key, item));
+                            lines.push(format!("{key}: {item}"));
                         }
                     }
                 } else if let Some(text) = val.as_str() {
-                    lines.push(format!("{}: {}", key, text.replace('\n', " ")));
+                    let normalized = text.replace('\n', " ");
+                    lines.push(format!("{key}: {normalized}"));
                 } else {
-                    lines.push(format!("{}: {}", key, val));
+                    lines.push(format!("{key}: {val}"));
                 }
             }
             if !lines.is_empty() {
+                output.push('\n');
                 for line in lines {
-                    output.push_str(&format!("\n  - {line}"));
+                    let _ = writeln!(output, "  - {line}");
                 }
                 return output;
             }
@@ -266,17 +279,15 @@ fn format_http_error(status: u16, reason: &str, body: &str) -> String {
     output
 }
 
-fn handle_error(err: anyhow::Error) -> ! {
-    if let Some(beeminder_err) = err.downcast_ref::<BeeminderError>() {
-        if let BeeminderError::HttpStatus {
-            status,
-            reason,
-            body,
-        } = beeminder_err
-        {
-            eprintln!("{}", format_http_error(*status, reason, body));
-            process::exit(1);
-        }
+fn handle_error(err: &anyhow::Error) -> ! {
+    if let Some(BeeminderError::HttpStatus {
+        status,
+        reason,
+        body,
+    }) = err.downcast_ref::<BeeminderError>()
+    {
+        eprintln!("{}", format_http_error(*status, reason, body));
+        process::exit(1);
     }
 
     eprintln!("{err}");
@@ -304,12 +315,13 @@ async fn main() -> Result<()> {
     };
 
     if let Err(err) = run(cli).await {
-        handle_error(err);
+        handle_error(&err);
     }
 
     Ok(())
 }
 
+#[allow(clippy::too_many_lines)]
 async fn run(cli: Cli) -> Result<()> {
     match cli.command {
         Command::Completions { shell } => {
@@ -377,7 +389,9 @@ async fn run(cli: Cli) -> Result<()> {
             datapublic,
         } => {
             let client = get_client()?;
-            let trio_count = goalval.is_some() as u8 + rate.is_some() as u8 + goaldate.is_some() as u8;
+            let trio_count = u8::from(goalval.is_some())
+                + u8::from(rate.is_some())
+                + u8::from(goaldate.is_some());
             if trio_count != 2 {
                 return Err(anyhow::anyhow!(
                     "Goal creation requires exactly two of: --goalval, --rate, --goaldate"
@@ -410,6 +424,7 @@ async fn run(cli: Cli) -> Result<()> {
             fineprint,
             secret,
             datapublic,
+            archived,
         } => {
             let client = get_client()?;
             let mut update = UpdateGoal::new();
@@ -422,6 +437,7 @@ async fn run(cli: Cli) -> Result<()> {
             update.fineprint = fineprint;
             update.secret = secret;
             update.datapublic = datapublic;
+            update.archived = archived;
             let updated = client.update_goal(&goal, &update).await?;
             println!("{}", updated.slug);
         }

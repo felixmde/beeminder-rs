@@ -1,3 +1,5 @@
+#![allow(clippy::multiple_crate_versions)]
+
 use anyhow::{Context, Result};
 use beeconfig::BeeConfig;
 

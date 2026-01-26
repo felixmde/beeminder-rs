@@ -2,6 +2,12 @@
 name = "beeconfig"
 version = "0.1.0"
 edition = "2021"
+description = "Shared config loader for Beeminder tools"
+license = "MIT"
+repository = "https://github.com/felixmde/beeminder-rs"
+readme = "../README.md"
+keywords = ["beeminder", "config"]
+categories = ["development-tools"]
 
 [lib]
 name = "beeconfig"

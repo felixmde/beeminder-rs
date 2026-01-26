@@ -5,10 +5,10 @@ use time::{Duration, OffsetDateTime};
 
 /// Attempts to parse JSON and shows error info on failure
 fn try_parse<T: serde::de::DeserializeOwned>(json: &str, type_name: &str) {
-    println!("\n>>> Attempting to parse as {} <<<", type_name);
+    println!("\n>>> Attempting to parse as {type_name} <<<");
     match serde_json::from_str::<T>(json) {
-        Ok(_) => println!("SUCCESS: Parsed {} correctly", type_name),
-        Err(e) => println!("FAILED: {}", e),
+        Ok(_) => println!("SUCCESS: Parsed {type_name} correctly"),
+        Err(e) => println!("FAILED: {e}"),
     }
 }
 
@@ -25,14 +25,15 @@ async fn main() {
     println!("TEST 1: GET /users/me.json");
     println!("{}", "=".repeat(60));
 
-    let url = format!("{}/users/me.json?auth_token={}", base_url, api_key);
+    let url = format!("{base_url}/users/me.json?auth_token={api_key}");
     match client.get(&url).send().await {
         Ok(resp) => {
             let text = resp.text().await.unwrap();
-            println!("Response length: {} bytes", text.len());
+            let len = text.len();
+            println!("Response length: {len} bytes");
             try_parse::<UserInfo>(&text, "UserInfo");
         }
-        Err(e) => println!("Request failed: {}", e),
+        Err(e) => println!("Request failed: {e}"),
     }
 
     // Test 2: Get user diff
@@ -41,19 +42,16 @@ async fn main() {
     println!("{}", "=".repeat(60));
 
     let since = OffsetDateTime::now_utc() - Duration::days(2);
-    let url = format!(
-        "{}/users/me.json?auth_token={}&diff_since={}",
-        base_url,
-        api_key,
-        since.unix_timestamp()
-    );
+    let diff_since = since.unix_timestamp();
+    let url = format!("{base_url}/users/me.json?auth_token={api_key}&diff_since={diff_since}");
     match client.get(&url).send().await {
         Ok(resp) => {
             let text = resp.text().await.unwrap();
-            println!("Response length: {} bytes", text.len());
+            let len = text.len();
+            println!("Response length: {len} bytes");
             try_parse::<UserInfoDiff>(&text, "UserInfoDiff");
         }
-        Err(e) => println!("Request failed: {}", e),
+        Err(e) => println!("Request failed: {e}"),
     }
 
     // Test 3: Get datapoints for a goal
@@ -62,16 +60,16 @@ async fn main() {
     println!("{}", "=".repeat(60));
 
     let url = format!(
-        "{}/users/me/goals/pushups/datapoints.json?auth_token={}&count=5",
-        base_url, api_key
+        "{base_url}/users/me/goals/pushups/datapoints.json?auth_token={api_key}&count=5"
     );
     match client.get(&url).send().await {
         Ok(resp) => {
             let text = resp.text().await.unwrap();
-            println!("Response length: {} bytes", text.len());
+            let len = text.len();
+            println!("Response length: {len} bytes");
             try_parse::<Vec<DatapointFull>>(&text, "Vec<DatapointFull>");
         }
-        Err(e) => println!("Request failed: {}", e),
+        Err(e) => println!("Request failed: {e}"),
     }
 
     // Test 4: Get single goal
@@ -79,16 +77,14 @@ async fn main() {
     println!("TEST 4: GET /users/me/goals/pushups.json");
     println!("{}", "=".repeat(60));
 
-    let url = format!(
-        "{}/users/me/goals/pushups.json?auth_token={}",
-        base_url, api_key
-    );
+    let url = format!("{base_url}/users/me/goals/pushups.json?auth_token={api_key}");
     match client.get(&url).send().await {
         Ok(resp) => {
             let text = resp.text().await.unwrap();
-            println!("Response length: {} bytes", text.len());
+            let len = text.len();
+            println!("Response length: {len} bytes");
             try_parse::<GoalFull>(&text, "GoalFull");
         }
-        Err(e) => println!("Request failed: {}", e),
+        Err(e) => println!("Request failed: {e}"),
     }
 }

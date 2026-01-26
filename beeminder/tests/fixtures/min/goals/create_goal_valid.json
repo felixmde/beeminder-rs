@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "slug": "testgoal",
+      "title": "Test Goal",
+      "goal_type": "hustler",
+      "gunits": "units",
+      "rate": "1",
+      "goaldate": "1705000000"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "id": "goal_1",
+      "slug": "testgoal"
+    }
+  }
+}

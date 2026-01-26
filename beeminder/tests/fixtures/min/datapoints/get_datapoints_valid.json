@@ -1,0 +1,37 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "GET",
+    "path": "/api/v1/users/me/goals/exercise/datapoints.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": [
+      {
+        "id": "dp1234567890",
+        "timestamp": 1700000000,
+        "daystamp": "20240101",
+        "value": 1.0,
+        "comment": "Morning workout",
+        "updated_at": 1700000000,
+        "requestid": null
+      },
+      {
+        "id": "dp0987654321",
+        "timestamp": 1700003600,
+        "daystamp": "20240101",
+        "value": 0.5,
+        "comment": "Evening stretch",
+        "updated_at": 1700003600,
+        "requestid": null
+      }
+    ]
+  }
+}

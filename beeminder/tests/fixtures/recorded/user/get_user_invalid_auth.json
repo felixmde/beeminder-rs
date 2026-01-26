@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T16:25:56.230971",
+    "method": "GET",
+    "path": "/api/v1/users/me.json",
+    "query": {
+      "auth_token": "invalid_token_12345"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+$"
+  },
+  "response": {
+    "status_code": 401,
+    "body": {
+      "errors": {
+        "auth_token": "bad_token",
+        "message": "No such auth_token found. (Did you mix up auth_token and access_token?)"
+      }
+    }
+  }
+}

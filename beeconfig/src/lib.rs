@@ -125,8 +125,8 @@ impl ApiKey {
                 Ok(trimmed.to_string())
             }
             Self::Env { env } => {
-                let value =
-                    std::env::var(env).map_err(|_| BeeConfigError::MissingEnv { env: env.clone() })?;
+                let value = std::env::var(env)
+                    .map_err(|_| BeeConfigError::MissingEnv { env: env.clone() })?;
                 let trimmed = value.trim();
                 if trimmed.is_empty() {
                     return Err(BeeConfigError::MissingApiKey);

@@ -515,3 +515,240 @@ impl UpdateDatapoint {
         self
     }
 }
+
+// =============================================================================
+// REQUEST TYPES - Goals and batch datapoints
+// =============================================================================
+
+/// Supported Beeminder goal types.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum GoalType {
+    Hustler,
+    Biker,
+    Fatloser,
+    Gainer,
+    Inboxer,
+    Drinker,
+    Custom,
+}
+
+impl GoalType {
+    /// Canonical string values accepted by the API.
+    pub const VALUES: [&'static str; 7] = [
+        "hustler",
+        "biker",
+        "fatloser",
+        "gainer",
+        "inboxer",
+        "drinker",
+        "custom",
+    ];
+
+    /// Returns the canonical API string for this goal type.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Hustler => "hustler",
+            Self::Biker => "biker",
+            Self::Fatloser => "fatloser",
+            Self::Gainer => "gainer",
+            Self::Inboxer => "inboxer",
+            Self::Drinker => "drinker",
+            Self::Custom => "custom",
+        }
+    }
+}
+
+impl std::fmt::Display for GoalType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct GoalTypeParseError {
+    value: String,
+}
+
+impl std::fmt::Display for GoalTypeParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "invalid goal type '{}'; expected one of: {}",
+            self.value,
+            GoalType::VALUES.join(", ")
+        )
+    }
+}
+
+impl std::error::Error for GoalTypeParseError {}
+
+impl std::str::FromStr for GoalType {
+    type Err = GoalTypeParseError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        let normalized = value.trim().to_ascii_lowercase().replace(&[' ', '-'], "");
+        let goal_type = match normalized.as_str() {
+            "hustler" => Self::Hustler,
+            "biker" => Self::Biker,
+            "fatloser" => Self::Fatloser,
+            "gainer" => Self::Gainer,
+            "inboxer" => Self::Inboxer,
+            "drinker" => Self::Drinker,
+            "custom" => Self::Custom,
+            _ => {
+                return Err(GoalTypeParseError {
+                    value: value.to_string(),
+                })
+            }
+        };
+        Ok(goal_type)
+    }
+}
+
+impl From<GoalType> for String {
+    fn from(value: GoalType) -> Self {
+        value.as_str().to_string()
+    }
+}
+
+/// Parameters for creating a goal
+#[must_use]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateGoal {
+    /// Goal slug (URL identifier)
+    pub slug: String,
+    /// Goal title
+    pub title: String,
+    /// Goal type (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
+    pub goal_type: String,
+    /// Goal value - the number the bright red line will eventually reach
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub goalval: Option<f64>,
+    /// Slope of the bright red line
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate: Option<f64>,
+    /// Unix timestamp of the goal date
+    #[serde(
+        with = "time::serde::timestamp::option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub goaldate: Option<OffsetDateTime>,
+    /// Rate units: y/m/w/d/h for yearly/monthly/weekly/daily/hourly
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runits: Option<String>,
+    /// Initial value
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initval: Option<f64>,
+    /// Unix timestamp of the initial day
+    #[serde(
+        with = "time::serde::timestamp::option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub initday: Option<OffsetDateTime>,
+    /// Goal units (e.g., "hours", "pushups")
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gunits: Option<String>,
+    /// Label for the y-axis of the graph
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub yaxis: Option<String>,
+    /// Whether goal requires login to view
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub secret: Option<bool>,
+    /// Whether datapoints require login to view
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub datapublic: Option<bool>,
+    /// User-provided description of what exactly they are committing to
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fineprint: Option<String>,
+}
+
+impl CreateGoal {
+    /// Creates a new goal with required fields
+    pub fn new(
+        slug: impl Into<String>,
+        title: impl Into<String>,
+        goal_type: impl Into<String>,
+    ) -> Self {
+        Self {
+            slug: slug.into(),
+            title: title.into(),
+            goal_type: goal_type.into(),
+            goalval: None,
+            rate: None,
+            goaldate: None,
+            runits: None,
+            initval: None,
+            initday: None,
+            gunits: None,
+            yaxis: None,
+            secret: None,
+            datapublic: None,
+            fineprint: None,
+        }
+    }
+}
+
+/// Parameters for updating a goal
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct UpdateGoal {
+    /// New title
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    /// New goal value
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub goalval: Option<f64>,
+    /// New rate
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate: Option<f64>,
+    /// New goal date
+    #[serde(
+        with = "time::serde::timestamp::option",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub goaldate: Option<OffsetDateTime>,
+    /// New rate units
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub runits: Option<String>,
+    /// New y-axis label
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub yaxis: Option<String>,
+    /// New fineprint/commitment description
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fineprint: Option<String>,
+    /// Whether goal requires login to view
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub secret: Option<bool>,
+    /// Whether datapoints require login to view
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub datapublic: Option<bool>,
+}
+
+impl UpdateGoal {
+    /// Creates an empty update
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+/// Response from creating multiple datapoints
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CreateAllResponse {
+    /// All datapoints created successfully
+    Success(Vec<DatapointFull>),
+    /// Partial success with errors
+    Partial {
+        successes: Vec<DatapointFull>,
+        errors: Vec<serde_json::Value>,
+    },
+}
+
+/// Response from auth token endpoint
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthTokenResponse {
+    /// The user's auth token (present when authenticated)
+    pub auth_token: Option<String>,
+    /// Error message (present when not authenticated)
+    pub error: Option<String>,
+}

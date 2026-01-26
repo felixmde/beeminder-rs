@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/testgoal/shortcircuit.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/shortcircuit\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "id": "goal_1",
+      "slug": "testgoal"
+    }
+  }
+}

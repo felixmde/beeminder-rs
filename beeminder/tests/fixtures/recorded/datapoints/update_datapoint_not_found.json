@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T18:00:20.240092",
+    "method": "PUT",
+    "path": "/api/v1/users/me/goals/test/datapoints/nonexistent123.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "value": "1"
+    }
+  },
+  "request": {
+    "method": "PUT",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints/[^/]+$"
+  },
+  "response": {
+    "status_code": 404,
+    "body": {
+      "error": "The requested resource was not found."
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T18:04:19.657115",
+    "method": "DELETE",
+    "path": "/api/v1/users/me/goals/test/datapoints/nonexistent456.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "DELETE",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints/[^/]+$"
+  },
+  "response": {
+    "status_code": 404,
+    "body": {
+      "error": "The requested resource was not found."
+    }
+  }
+}

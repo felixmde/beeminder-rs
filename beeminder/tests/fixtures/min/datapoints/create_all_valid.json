@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/testgoal/datapoints/create_all.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "datapoints": "[{\"value\":1.5,\"comment\":\"batch1\"},{\"value\":2.5,\"comment\":\"batch2\"}]"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints/create_all\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": [
+      {
+        "id": "dp_a",
+        "timestamp": 1700000000,
+        "daystamp": "20240101"
+      },
+      {
+        "id": "dp_b",
+        "timestamp": 1700003600,
+        "daystamp": "20240101"
+      }
+    ]
+  }
+}

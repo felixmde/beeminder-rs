@@ -1,7 +1,7 @@
 pub mod types;
 use crate::types::{
-    CreateDatapoint, Datapoint, DatapointFull, Goal, GoalFull, GoalSummary, UpdateDatapoint,
-    UserInfo, UserInfoDiff,
+    AuthTokenResponse, CreateAllResponse, CreateDatapoint, CreateGoal, Datapoint, DatapointFull,
+    Goal, GoalFull, GoalSummary, UpdateDatapoint, UpdateGoal, UserInfo, UserInfoDiff,
 };
 use reqwest::Client;
 use time::OffsetDateTime;
@@ -10,6 +10,14 @@ use time::OffsetDateTime;
 pub enum Error {
     #[error("HTTP error: {0}")]
     Http(#[from] reqwest::Error),
+    #[error("HTTP status {status} {reason}: {body}")]
+    HttpStatus {
+        status: u16,
+        reason: String,
+        body: String,
+    },
+    #[error("JSON error: {0}")]
+    Json(#[from] serde_json::Error),
 }
 
 pub struct BeeminderClient {
@@ -21,6 +29,29 @@ pub struct BeeminderClient {
 }
 
 impl BeeminderClient {
+    async fn parse_response<T>(response: reqwest::Response) -> Result<T, Error>
+    where
+        T: serde::de::DeserializeOwned,
+    {
+        let status = response.status();
+        if !status.is_success() {
+            let body = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "<failed to read body>".to_string());
+            let reason = status
+                .canonical_reason()
+                .unwrap_or("HTTP error")
+                .to_string();
+            return Err(Error::HttpStatus {
+                status: status.as_u16(),
+                reason,
+                body,
+            });
+        }
+        response.json().await.map_err(Error::from)
+    }
+
     async fn get<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
     where
         T: serde::de::DeserializeOwned,
@@ -32,9 +63,22 @@ impl BeeminderClient {
             .query(&[("auth_token", self.api_key.as_str())])
             .query(&query)
             .send()
-            .await?
-            .error_for_status()?;
-        response.json().await.map_err(Error::from)
+            .await?;
+        Self::parse_response(response).await
+    }
+
+    async fn get_no_auth<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
+    where
+        T: serde::de::DeserializeOwned,
+        U: serde::ser::Serialize,
+    {
+        let response = self
+            .client
+            .get(format!("{}{}", self.base_url, endpoint))
+            .query(&query)
+            .send()
+            .await?;
+        Self::parse_response(response).await
     }
 
     async fn post<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
@@ -46,11 +90,10 @@ impl BeeminderClient {
             .client
             .post(format!("{}{}", self.base_url, endpoint))
             .query(&[("auth_token", self.api_key.as_str())])
-            .query(query)
+            .form(query)
             .send()
-            .await?
-            .error_for_status()?;
-        response.json().await.map_err(Error::from)
+            .await?;
+        Self::parse_response(response).await
     }
 
     async fn put<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
@@ -62,11 +105,10 @@ impl BeeminderClient {
             .client
             .put(format!("{}{}", self.base_url, endpoint))
             .query(&[("auth_token", self.api_key.as_str())])
-            .query(query)
+            .form(query)
             .send()
-            .await?
-            .error_for_status()?;
-        response.json().await.map_err(Error::from)
+            .await?;
+        Self::parse_response(response).await
     }
 
     async fn delete<T, U>(&self, endpoint: &str, query: &U) -> Result<T, Error>
@@ -80,9 +122,8 @@ impl BeeminderClient {
             .query(&[("auth_token", self.api_key.as_str())])
             .query(query)
             .send()
-            .await?
-            .error_for_status()?;
-        response.json().await.map_err(Error::from)
+            .await?;
+        Self::parse_response(response).await
     }
 
     /// Creates a new `BeeminderClient` with the given API key.
@@ -113,6 +154,14 @@ impl BeeminderClient {
         self
     }
 
+    /// Sets a custom base URL for this client.
+    /// Useful for testing with mock servers.
+    #[must_use]
+    pub fn with_base_url(mut self, base_url: impl Into<String>) -> Self {
+        self.base_url = base_url.into();
+        self
+    }
+
     /// Retrieves user information for user associated with client.
     ///
     /// # Errors
@@ -125,6 +174,14 @@ impl BeeminderClient {
         };
         let endpoint = format!("users/{}.json", self.username);
         self.get(&endpoint, &query).await
+    }
+
+    /// Retrieves auth token for the current logged-in session (requires browser session/cookies).
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn get_auth_token(&self) -> Result<AuthTokenResponse, Error> {
+        self.get_no_auth("auth_token.json", &()).await
     }
 
     /// Retrieves detailed user information with changes since the specified timestamp.
@@ -261,6 +318,24 @@ impl BeeminderClient {
         self.delete(&endpoint, &()).await
     }
 
+    /// Creates multiple datapoints for a goal.
+    ///
+    /// # Errors
+    /// Returns an error if serialization fails or the HTTP request fails.
+    pub async fn create_all_datapoints(
+        &self,
+        goal: &str,
+        datapoints: &[CreateDatapoint],
+    ) -> Result<CreateAllResponse, Error> {
+        let datapoints_json = serde_json::to_string(datapoints)?;
+        let query = vec![("datapoints", datapoints_json)];
+        let endpoint = format!(
+            "users/{}/goals/{goal}/datapoints/create_all.json",
+            self.username
+        );
+        self.post(&endpoint, &query).await
+    }
+
     /// Retrieves all goals for the user.
     ///
     /// # Errors
@@ -328,5 +403,59 @@ impl BeeminderClient {
         }
         let endpoint = format!("users/{}/goals/{goal}.json", self.username);
         self.get(&endpoint, &query).await
+    }
+
+    /// Creates a new goal.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn create_goal(&self, goal: &CreateGoal) -> Result<GoalFull, Error> {
+        let endpoint = format!("users/{}/goals.json", self.username);
+        self.post(&endpoint, goal).await
+    }
+
+    /// Updates an existing goal.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn update_goal(&self, goal: &str, update: &UpdateGoal) -> Result<GoalFull, Error> {
+        let endpoint = format!("users/{}/goals/{goal}.json", self.username);
+        self.put(&endpoint, update).await
+    }
+
+    /// Refreshes a goal's graph (autodata refetch).
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn refresh_graph(&self, goal: &str) -> Result<bool, Error> {
+        let endpoint = format!("users/{}/goals/{goal}/refresh_graph.json", self.username);
+        self.get(&endpoint, &()).await
+    }
+
+    /// Short-circuits a goal (charges current pledge and increases pledge level).
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn shortcircuit(&self, goal: &str) -> Result<GoalFull, Error> {
+        let endpoint = format!("users/{}/goals/{goal}/shortcircuit.json", self.username);
+        self.post(&endpoint, &()).await
+    }
+
+    /// Schedules a pledge stepdown for a goal.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn stepdown(&self, goal: &str) -> Result<GoalFull, Error> {
+        let endpoint = format!("users/{}/goals/{goal}/stepdown.json", self.username);
+        self.post(&endpoint, &()).await
+    }
+
+    /// Cancels a pledge stepdown for a goal.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn cancel_stepdown(&self, goal: &str) -> Result<GoalFull, Error> {
+        let endpoint = format!("users/{}/goals/{goal}/cancel_stepdown.json", self.username);
+        self.post(&endpoint, &()).await
     }
 }

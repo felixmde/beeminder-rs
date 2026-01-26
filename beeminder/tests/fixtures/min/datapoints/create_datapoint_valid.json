@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/exercise/datapoints.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "value": "2.5",
+      "comment": "Test datapoint"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "id": "dp_new_12345",
+      "timestamp": 1700000000,
+      "daystamp": "20240101",
+      "value": 2.5,
+      "comment": "Test datapoint",
+      "updated_at": 1700000000,
+      "requestid": null
+    }
+  }
+}

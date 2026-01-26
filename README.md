@@ -7,7 +7,7 @@ A Cargo workspace with Rust tools for [Beeminder](https://www.beeminder.com/).
 | Crate | Description | Status |
 |-------|-------------|--------|
 | **beeminder** | Async Rust client library for the Beeminder API | Usable |
-| **beeline** | CLI for Beeminder (list, add, edit, backup) | Usable |
+| **beeline** | CLI for Beeminder (list, add, edit, backup, goal ops, batch, danger actions) | Usable |
 | **beetui** | TUI dashboard | Coming soon |
 | **beemcp** | MCP server for AI assistants | Coming soon |
 
@@ -47,6 +47,36 @@ beeline edit meditation
 # Backup all user data to JSON
 beeline backup
 beeline backup mybackup.json
+
+# Create a goal
+beeline goal-create reading "Reading" hustler --goalval 10 --rate 1 --runits w --gunits pages
+
+# For most goal types, Beeminder requires exactly two of: --goalval, --rate, --goaldate
+# Goal units are also required: --gunits
+
+# Update a goal
+beeline goal-update reading --title "Reading (books)" --rate 2
+
+# Refresh a goal's graph (autodata refetch)
+beeline goal-refresh reading
+
+# Add multiple datapoints from a JSON array (file or stdin)
+beeline add-batch reading datapoints.json
+cat datapoints.json | beeline add-batch reading -
+
+# Danger actions
+beeline shortcircuit reading
+beeline stepdown reading
+beeline cancel-stepdown reading
+```
+
+Example batch file format (`datapoints.json`):
+
+```json
+[
+  { "value": 1.0, "comment": "Chapter 1" },
+  { "value": 2.0, "timestamp": 1735689600 }
+]
 ```
 
 Config file examples (stored in your standard OS config location for `beeminder`):

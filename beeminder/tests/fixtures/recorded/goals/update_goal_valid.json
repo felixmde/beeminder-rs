@@ -1,0 +1,251 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T18:32:54.725665",
+    "method": "PUT",
+    "path": "/api/v1/users/me/goals/test.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "title": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "PUT",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "slug": "test",
+      "title": "REDACTED",
+      "description": null,
+      "goalval": null,
+      "rate": 1.0,
+      "goaldate": 4102444799,
+      "svg_url": "https://cdn.beeminder.com/uploads/31326a46-d7ea-4db5-8d64-d377538b48e2.svg",
+      "graph_url": "https://cdn.beeminder.com/uploads/31326a46-d7ea-4db5-8d64-d377538b48e2.png",
+      "thumb_url": "https://cdn.beeminder.com/uploads/31326a46-d7ea-4db5-8d64-d377538b48e2-thumb.png",
+      "goal_type": "hustler",
+      "autodata": null,
+      "healthkitmetric": "",
+      "autodata_config": {},
+      "losedate": 1861419599,
+      "urgencykey": "FROx;PPRx;DL1861419599;P1000000000;test",
+      "deadline": 0,
+      "leadtime": 3,
+      "alertstart": 61200,
+      "use_defaults": true,
+      "id": "69769ad7f0168adc85090f1d",
+      "ephem": false,
+      "queued": true,
+      "panic": 54000,
+      "updated_at": 1769383974,
+      "burner": "frontburner",
+      "yaw": 1,
+      "lane": 1064,
+      "delta": 1058,
+      "runits": "d",
+      "limsum": "REDACTED",
+      "frozen": false,
+      "lost": false,
+      "won": false,
+      "contract": {
+        "amount": 0.0,
+        "stepdown_at": null,
+        "pending_amount": null,
+        "pending_at": null
+      },
+      "delta_text": "REDACTED",
+      "safebuf": 1065,
+      "safebump": 1059,
+      "safesum": "REDACTED",
+      "autoratchet": null,
+      "coasting": false,
+      "limsumdate": "REDACTED",
+      "limsumdays": "REDACTED",
+      "baremin": "REDACTED",
+      "baremintotal": "REDACTED",
+      "roadstatuscolor": "green",
+      "colorkey": "dkgreen",
+      "colorhex": "#228b22",
+      "lasttouch": "2026-01-25T22:53:31.000Z",
+      "integery": false,
+      "fineprint": null,
+      "todayta": true,
+      "hhmmformat": false,
+      "timey": false,
+      "gunits": "REDACTED",
+      "gunits_singular": "REDACTED",
+      "weekends_off": false,
+      "yaxis": "REDACTED",
+      "maxflux": null,
+      "tmin": null,
+      "tmax": null,
+      "initday": 1769360400,
+      "initval": 0,
+      "curday": 1769360400,
+      "curval": 1058,
+      "currate": 0,
+      "lastday": 1769360400,
+      "dir": 1,
+      "kyoom": true,
+      "odom": null,
+      "noisy": false,
+      "aggday": "sum",
+      "plotall": true,
+      "steppy": true,
+      "rosy": false,
+      "movingav": false,
+      "aura": false,
+      "numpts": 7,
+      "road": [
+        [
+          1769878800,
+          null,
+          0.0
+        ]
+      ],
+      "roadall": [
+        [
+          1769317200,
+          0.0,
+          null
+        ],
+        [
+          1769878800,
+          null,
+          0.0
+        ],
+        [
+          4102444799,
+          null,
+          1.0
+        ]
+      ],
+      "fullroad": [
+        [
+          1769360400,
+          0,
+          0
+        ],
+        [
+          1769878800,
+          0,
+          0
+        ],
+        [
+          4102419600,
+          26997,
+          1
+        ]
+      ],
+      "secret": true,
+      "pledge": 0.0,
+      "pledge_cap": 30,
+      "mathishard": [
+        4102419600,
+        26997,
+        1
+      ],
+      "headsum": "REDACTED",
+      "datapublic": false,
+      "graphsum": "REDACTED",
+      "rah": 1,
+      "last_datapoint": {
+        "id": "69769eebf0168adc85090f4b",
+        "timestamp": 1769381611,
+        "daystamp": "20260125",
+        "value": 42.0,
+        "comment": "REDACTED",
+        "updated_at": 1769381693,
+        "requestid": null,
+        "origin": "api",
+        "creator": "felixm",
+        "is_dummy": false,
+        "is_initial": false,
+        "urtext": null,
+        "fulltext": "REDACTED",
+        "canonical": "REDACTED",
+        "formatted_value": "REDACTED",
+        "created_at": "2026-01-25T22:53:31.000Z"
+      },
+      "callback_url": null,
+      "tags": [],
+      "recent_data": [
+        {
+          "id": "69769eebf0168adc85090f4b",
+          "timestamp": 1769381611,
+          "daystamp": "20260125",
+          "value": 42.0,
+          "comment": "REDACTED",
+          "updated_at": 1769381693,
+          "requestid": null,
+          "origin": "api",
+          "creator": "felixm",
+          "is_dummy": false,
+          "is_initial": false,
+          "urtext": null,
+          "fulltext": "REDACTED",
+          "canonical": "REDACTED",
+          "formatted_value": "REDACTED",
+          "created_at": "2026-01-25T22:53:31.000Z"
+        },
+        {
+          "id": "69769eebf0168adc85090f4a",
+          "timestamp": 1769381611,
+          "daystamp": "20260125",
+          "value": 10.0,
+          "comment": "REDACTED",
+          "updated_at": 1769381611,
+          "requestid": null,
+          "origin": "api",
+          "creator": "felixm",
+          "is_dummy": false,
+          "is_initial": false,
+          "urtext": null,
+          "fulltext": "REDACTED",
+          "canonical": "REDACTED",
+          "formatted_value": "REDACTED",
+          "created_at": "2026-01-25T22:53:31.000Z"
+        },
+        {
+          "id": "69769ccef0168adc85090f3d",
+          "timestamp": 1768971599,
+          "daystamp": "20260120",
+          "value": 4.0,
+          "comment": "REDACTED",
+          "updated_at": 1769381070,
+          "requestid": null,
+          "origin": "api",
+          "creator": "felixm",
+          "is_dummy": false,
+          "is_initial": false,
+          "urtext": null,
+          "fulltext": "REDACTED",
+          "canonical": "REDACTED",
+          "formatted_value": "REDACTED",
+          "created_at": "2026-01-25T22:44:30.000Z"
+        }
+      ],
+      "dueby": {
+        "20260125": {
+          "delta": -1058,
+          "total": 0,
+          "formatted_delta_for_beedroid": "REDACTED",
+          "formatted_total_for_beedroid": "REDACTED"
+        },
+        "20260126": {
+          "delta": -1058,
+          "total": 0,
+          "formatted_delta_for_beedroid": "REDACTED",
+          "formatted_total_for_beedroid": "REDACTED"
+        },
+        "20260127": {
+          "delta": -1058,
+          "total": 0,
+          "formatted_delta_for_beedroid": "REDACTED",
+          "formatted_total_for_beedroid": "REDACTED"
+        }
+      }
+    }
+  }
+}

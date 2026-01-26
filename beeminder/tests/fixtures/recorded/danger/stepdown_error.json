@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T18:53:37.859034",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/test/stepdown.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/stepdown\\.json$"
+  },
+  "response": {
+    "status_code": 422,
+    "body": {
+      "errors": "Cannot schedule a stepdown for a contract with amount $5"
+    }
+  }
+}

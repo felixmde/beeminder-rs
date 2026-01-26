@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T19:12:18.668488",
+    "method": "GET",
+    "path": "/api/v1/auth_token.json",
+    "query": {}
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/auth_token\\.json$"
+  },
+  "response": {
+    "status_code": 401,
+    "body": {
+      "error": "You need to log in or sign up before continuing."
+    }
+  }
+}

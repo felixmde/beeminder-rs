@@ -1,0 +1,721 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T16:37:52.587437",
+    "method": "GET",
+    "path": "/api/v1/users/me/goals/archived.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": [
+      {
+        "slug": "abclist",
+        "title": "REDACTED",
+        "description": null,
+        "goalval": 53.672619047619044,
+        "rate": null,
+        "goaldate": 1620100800,
+        "svg_url": "https://cdn.beeminder.com/uploads/a2eedaa9-73c2-4bc5-a329-c422d7b8d658.svg",
+        "graph_url": "https://cdn.beeminder.com/uploads/a2eedaa9-73c2-4bc5-a329-c422d7b8d658.png",
+        "thumb_url": "https://cdn.beeminder.com/uploads/a2eedaa9-73c2-4bc5-a329-c422d7b8d658-thumb.png",
+        "goal_type": "hustler",
+        "autodata": null,
+        "healthkitmetric": "",
+        "autodata_config": {},
+        "losedate": 1620187199,
+        "urgencykey": "FRO1;PPRx;DL1620187199;P0999999500;abclist",
+        "deadline": 0,
+        "leadtime": 3,
+        "alertstart": 61200,
+        "use_defaults": true,
+        "id": "603c087855c1333e2e000ca7",
+        "ephem": false,
+        "queued": false,
+        "panic": 54000,
+        "updated_at": 1620189906,
+        "burner": "frontburner",
+        "yaw": 1,
+        "lane": -1,
+        "delta": 1.327380952380956,
+        "runits": "w",
+        "limsum": "REDACTED",
+        "frozen": true,
+        "lost": false,
+        "won": true,
+        "contract": {
+          "amount": 5.0,
+          "stepdown_at": null,
+          "pending_amount": null,
+          "pending_at": null
+        },
+        "delta_text": "REDACTED",
+        "safebuf": 1,
+        "safebump": 53.672619047619044,
+        "safesum": "REDACTED",
+        "autoratchet": null,
+        "coasting": true,
+        "limsumdate": "REDACTED",
+        "limsumdays": "REDACTED",
+        "baremin": "REDACTED",
+        "baremintotal": "REDACTED",
+        "roadstatuscolor": "orange",
+        "colorkey": "dkgreen",
+        "colorhex": "#228b22",
+        "lasttouch": "2021-05-04T12:04:11.000Z",
+        "integery": false,
+        "fineprint": null,
+        "todayta": false,
+        "hhmmformat": false,
+        "timey": false,
+        "gunits": "REDACTED",
+        "gunits_singular": "REDACTED",
+        "weekends_off": false,
+        "yaxis": "REDACTED",
+        "maxflux": null,
+        "tmin": null,
+        "tmax": null,
+        "initday": 1614531600,
+        "initval": 0,
+        "curday": 1620144000,
+        "curval": 55,
+        "currate": 0,
+        "lastday": 1620144000,
+        "dir": 1,
+        "kyoom": true,
+        "odom": false,
+        "noisy": false,
+        "aggday": "sum",
+        "plotall": true,
+        "steppy": true,
+        "rosy": false,
+        "movingav": false,
+        "aura": false,
+        "numpts": 56,
+        "road": [
+          [
+            1615136400,
+            null,
+            7
+          ],
+          [
+            1615910400,
+            null,
+            7
+          ],
+          [
+            1617292800,
+            null,
+            6
+          ]
+        ],
+        "roadall": [
+          [
+            1614488400,
+            0.0,
+            null
+          ],
+          [
+            1615136400,
+            null,
+            7
+          ],
+          [
+            1615910400,
+            null,
+            7
+          ]
+        ],
+        "fullroad": [
+          [
+            1614531600,
+            0,
+            0
+          ],
+          [
+            1615136400,
+            7,
+            7
+          ],
+          [
+            1615910400,
+            16,
+            7
+          ]
+        ],
+        "secret": false,
+        "pledge": 5.0,
+        "pledge_cap": 10,
+        "mathishard": [
+          1620144000,
+          53.672619047619044,
+          5.989583333333332
+        ],
+        "headsum": "REDACTED",
+        "datapublic": false,
+        "graphsum": "REDACTED",
+        "rah": 53.672619047619044,
+        "last_datapoint": {
+          "id": "6091383b55c1337c9a00023a",
+          "timestamp": 1620187199,
+          "daystamp": "20210504",
+          "value": 1.0,
+          "comment": "REDACTED",
+          "updated_at": 1620129851,
+          "requestid": null,
+          "origin": "Beeminder Web",
+          "creator": "",
+          "is_dummy": false,
+          "is_initial": false,
+          "urtext": "REDACTED",
+          "fulltext": "REDACTED",
+          "canonical": "REDACTED",
+          "formatted_value": "REDACTED",
+          "created_at": "2021-05-04T12:04:11.000Z"
+        },
+        "callback_url": null,
+        "tags": [],
+        "recent_data": [
+          {
+            "timestamp": 1620187199,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "6091383b55c1337c9a00023a",
+            "updated_at": 1620129851,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2021-05-04T12:04:11.000Z",
+            "daystamp": "20210504"
+          },
+          {
+            "timestamp": 1620100799,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "608fea7855c1330c86001065",
+            "updated_at": 1620044408,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2021-05-03T12:20:08.000Z",
+            "daystamp": "20210503"
+          },
+          {
+            "timestamp": 1620014399,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "608f44bb55c1330c86000c3c",
+            "updated_at": 1620001979,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2021-05-03T00:32:59.000Z",
+            "daystamp": "20210502"
+          }
+        ],
+        "dueby": {
+          "20210504": {
+            "delta": -1.327380952380956,
+            "total": 53.672619047619044,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          },
+          "20210505": {
+            "delta": -1.327380952380956,
+            "total": 53.672619047619044,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          },
+          "20210506": {
+            "delta": -1.327380952380956,
+            "total": 53.672619047619044,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          }
+        }
+      },
+      {
+        "slug": "affirmations",
+        "title": "REDACTED",
+        "description": null,
+        "goalval": 241.75297619047618,
+        "rate": null,
+        "goaldate": 1642309200,
+        "svg_url": "https://cdn.beeminder.com/uploads/87921c6d-1080-4021-a061-a28ef7b6fd2b.svg",
+        "graph_url": "https://cdn.beeminder.com/uploads/87921c6d-1080-4021-a061-a28ef7b6fd2b.png",
+        "thumb_url": "https://cdn.beeminder.com/uploads/87921c6d-1080-4021-a061-a28ef7b6fd2b-thumb.png",
+        "goal_type": "hustler",
+        "autodata": null,
+        "healthkitmetric": "",
+        "autodata_config": {},
+        "losedate": 1642395599,
+        "urgencykey": "FRO1;PPRx;DL1642395599;P0999999500;affirmations",
+        "deadline": 0,
+        "leadtime": 3,
+        "alertstart": 61200,
+        "use_defaults": true,
+        "id": "6057535455c133693a0037c6",
+        "ephem": false,
+        "queued": false,
+        "panic": 54000,
+        "updated_at": 1642398303,
+        "burner": "frontburner",
+        "yaw": 1,
+        "lane": -1,
+        "delta": 2.2470238095238244,
+        "runits": "w",
+        "limsum": "REDACTED",
+        "frozen": true,
+        "lost": false,
+        "won": true,
+        "contract": {
+          "amount": 5.0,
+          "stepdown_at": null,
+          "pending_amount": null,
+          "pending_at": null
+        },
+        "delta_text": "REDACTED",
+        "safebuf": 1,
+        "safebump": 241.75297619047618,
+        "safesum": "REDACTED",
+        "autoratchet": null,
+        "coasting": true,
+        "limsumdate": "REDACTED",
+        "limsumdays": "REDACTED",
+        "baremin": "REDACTED",
+        "baremintotal": "REDACTED",
+        "roadstatuscolor": "orange",
+        "colorkey": "dkgreen",
+        "colorhex": "#228b22",
+        "lasttouch": "2022-01-15T16:50:17.000Z",
+        "integery": false,
+        "fineprint": "REDACTED",
+        "todayta": false,
+        "hhmmformat": false,
+        "timey": false,
+        "gunits": "REDACTED",
+        "gunits_singular": "REDACTED",
+        "weekends_off": false,
+        "yaxis": "REDACTED",
+        "maxflux": null,
+        "tmin": null,
+        "tmax": null,
+        "initday": 1616342400,
+        "initval": 0,
+        "curday": 1642352400,
+        "curval": 244,
+        "currate": 0,
+        "lastday": 1642266000,
+        "dir": 1,
+        "kyoom": true,
+        "odom": false,
+        "noisy": false,
+        "aggday": "sum",
+        "plotall": true,
+        "steppy": true,
+        "rosy": false,
+        "movingav": false,
+        "aura": false,
+        "numpts": 245,
+        "road": [
+          [
+            1616515200,
+            null,
+            0
+          ],
+          [
+            1616860800,
+            null,
+            6
+          ],
+          [
+            1616860800,
+            6,
+            null
+          ]
+        ],
+        "roadall": [
+          [
+            1616299200,
+            0.0,
+            null
+          ],
+          [
+            1616515200,
+            null,
+            0
+          ],
+          [
+            1616860800,
+            null,
+            6
+          ]
+        ],
+        "fullroad": [
+          [
+            1616342400,
+            0,
+            0
+          ],
+          [
+            1616515200,
+            0,
+            0
+          ],
+          [
+            1616860800,
+            3.4285714285714284,
+            6
+          ]
+        ],
+        "secret": false,
+        "pledge": 5.0,
+        "pledge_cap": 10,
+        "mathishard": [
+          1642352400,
+          241.75297619047618,
+          4.006770833333335
+        ],
+        "headsum": "REDACTED",
+        "datapublic": false,
+        "graphsum": "REDACTED",
+        "rah": 241.75297619047618,
+        "last_datapoint": {
+          "id": "61e2fb4955c133581c671094",
+          "timestamp": 1642309199,
+          "daystamp": "20220115",
+          "value": 1.0,
+          "comment": "REDACTED",
+          "updated_at": 1642265417,
+          "requestid": null,
+          "origin": "Beeminder Web",
+          "creator": "",
+          "is_dummy": false,
+          "is_initial": false,
+          "urtext": "REDACTED",
+          "fulltext": "REDACTED",
+          "canonical": "REDACTED",
+          "formatted_value": "REDACTED",
+          "created_at": "2022-01-15T16:50:17.000Z"
+        },
+        "callback_url": null,
+        "tags": [],
+        "recent_data": [
+          {
+            "timestamp": 1642309199,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "61e2fb4955c133581c671094",
+            "updated_at": 1642265417,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2022-01-15T16:50:17.000Z",
+            "daystamp": "20220115"
+          },
+          {
+            "timestamp": 1642222799,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "61e1e96555c133464295fe73",
+            "updated_at": 1642195301,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2022-01-14T21:21:41.000Z",
+            "daystamp": "20220114"
+          },
+          {
+            "timestamp": 1642049999,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "61dedc8b3b53bf67883083ce",
+            "updated_at": 1641995403,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2022-01-12T13:50:03.000Z",
+            "daystamp": "20220112"
+          }
+        ],
+        "dueby": {
+          "20220116": {
+            "delta": -2.2470238095238244,
+            "total": 241.75297619047618,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          },
+          "20220117": {
+            "delta": -2.2470238095238244,
+            "total": 241.75297619047618,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          },
+          "20220118": {
+            "delta": -2.2470238095238244,
+            "total": 241.75297619047618,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          }
+        }
+      },
+      {
+        "slug": "aftmc",
+        "title": "REDACTED",
+        "description": null,
+        "goalval": null,
+        "rate": 6.0,
+        "goaldate": 1615956303,
+        "svg_url": "https://cdn.beeminder.com/uploads/986ee30e-d79b-43ae-aa62-72fe718dec5c.svg",
+        "graph_url": "https://cdn.beeminder.com/uploads/986ee30e-d79b-43ae-aa62-72fe718dec5c.png",
+        "thumb_url": "https://cdn.beeminder.com/uploads/986ee30e-d79b-43ae-aa62-72fe718dec5c-thumb.png",
+        "goal_type": "hustler",
+        "autodata": null,
+        "healthkitmetric": "",
+        "autodata_config": {},
+        "losedate": 1616039999,
+        "urgencykey": "FRO1;PPRx;DL1616039999;P0999999500;aftmc",
+        "deadline": 0,
+        "leadtime": 0,
+        "alertstart": 61200,
+        "use_defaults": true,
+        "id": "60176aa855c1332a0a00527e",
+        "ephem": false,
+        "queued": false,
+        "panic": 54000,
+        "updated_at": 1616042712,
+        "burner": "frontburner",
+        "yaw": 1,
+        "lane": -1,
+        "delta": 2.857142857142854,
+        "runits": "w",
+        "limsum": "REDACTED",
+        "frozen": true,
+        "lost": false,
+        "won": true,
+        "contract": {
+          "amount": 5.0,
+          "stepdown_at": null,
+          "pending_amount": null,
+          "pending_at": null
+        },
+        "delta_text": "REDACTED",
+        "safebuf": 1,
+        "safebump": 42.142857142857146,
+        "safesum": "REDACTED",
+        "autoratchet": null,
+        "coasting": true,
+        "limsumdate": "REDACTED",
+        "limsumdays": "REDACTED",
+        "baremin": "REDACTED",
+        "baremintotal": "REDACTED",
+        "roadstatuscolor": "orange",
+        "colorkey": "dkgreen",
+        "colorhex": "#228b22",
+        "lasttouch": "2021-03-17T19:33:56.000Z",
+        "integery": false,
+        "fineprint": null,
+        "todayta": false,
+        "hhmmformat": false,
+        "timey": false,
+        "gunits": "REDACTED",
+        "gunits_singular": "REDACTED",
+        "weekends_off": false,
+        "yaxis": "REDACTED",
+        "maxflux": null,
+        "tmin": null,
+        "tmax": null,
+        "initday": 1612112400,
+        "initval": 0,
+        "curday": 1615996800,
+        "curval": 45,
+        "currate": 0,
+        "lastday": 1615996800,
+        "dir": 1,
+        "kyoom": true,
+        "odom": false,
+        "noisy": false,
+        "aggday": "sum",
+        "plotall": true,
+        "steppy": true,
+        "rosy": false,
+        "movingav": false,
+        "aura": false,
+        "numpts": 38,
+        "road": [
+          [
+            1612717200,
+            null,
+            6
+          ],
+          [
+            1614790800,
+            null,
+            6
+          ],
+          [
+            1614790800,
+            29.28571428571429,
+            null
+          ]
+        ],
+        "roadall": [
+          [
+            1612069200,
+            0.0,
+            null
+          ],
+          [
+            1612717200,
+            null,
+            6
+          ],
+          [
+            1614790800,
+            null,
+            6
+          ]
+        ],
+        "fullroad": [
+          [
+            1612112400,
+            0,
+            0
+          ],
+          [
+            1612717200,
+            6,
+            6
+          ],
+          [
+            1614790800,
+            26.571428571428573,
+            6
+          ]
+        ],
+        "secret": false,
+        "pledge": 5.0,
+        "pledge_cap": 30,
+        "mathishard": [
+          1615996800,
+          42.142857142857146,
+          6
+        ],
+        "headsum": "REDACTED",
+        "datapublic": false,
+        "graphsum": "REDACTED",
+        "rah": 42.142857142857146,
+        "last_datapoint": {
+          "id": "605259a455c133693a0008ff",
+          "timestamp": 1616039999,
+          "daystamp": "20210317",
+          "value": 1.0,
+          "comment": "REDACTED",
+          "updated_at": 1616009636,
+          "requestid": null,
+          "origin": "Beeminder Web",
+          "creator": "",
+          "is_dummy": false,
+          "is_initial": false,
+          "urtext": "REDACTED",
+          "fulltext": "REDACTED",
+          "canonical": "REDACTED",
+          "formatted_value": "REDACTED",
+          "created_at": "2021-03-17T19:33:56.000Z"
+        },
+        "callback_url": null,
+        "tags": [],
+        "recent_data": [
+          {
+            "timestamp": 1616039999,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "605259a455c133693a0008ff",
+            "updated_at": 1616009636,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2021-03-17T19:33:56.000Z",
+            "daystamp": "20210317"
+          },
+          {
+            "timestamp": 1615953599,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "6050e21255c1332ccf00083b",
+            "updated_at": 1615913490,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2021-03-16T16:51:30.000Z",
+            "daystamp": "20210316"
+          },
+          {
+            "timestamp": 1615867199,
+            "value": 1.0,
+            "comment": "REDACTED",
+            "id": "604fefd355c1332ca1001f25",
+            "updated_at": 1615851475,
+            "requestid": null,
+            "canonical": "REDACTED",
+            "fulltext": "REDACTED",
+            "urtext": "REDACTED",
+            "origin": "Beeminder Web",
+            "creator": "",
+            "created_at": "2021-03-15T23:37:55.000Z",
+            "daystamp": "20210315"
+          }
+        ],
+        "dueby": {
+          "20210317": {
+            "delta": -2.857142857142854,
+            "total": 42.142857142857146,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          },
+          "20210318": {
+            "delta": -2.857142857142854,
+            "total": 42.142857142857146,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          },
+          "20210319": {
+            "delta": -2.857142857142854,
+            "total": 42.142857142857146,
+            "formatted_delta_for_beedroid": "REDACTED",
+            "formatted_total_for_beedroid": "REDACTED"
+          }
+        }
+      }
+    ]
+  }
+}

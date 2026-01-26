@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "slug": "incomplete"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals\\.json$"
+  },
+  "response": {
+    "status_code": 400,
+    "body": {
+      "errors": "Missing required fields"
+    }
+  }
+}

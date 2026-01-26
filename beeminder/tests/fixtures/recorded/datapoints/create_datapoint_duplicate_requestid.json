@@ -1,0 +1,38 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T17:43:46.009877",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/test/datapoints.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "value": "999",
+      "requestid": "unique-test-id-123"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "id": "69769b73f0168adc85090f24",
+      "timestamp": 1769380723,
+      "daystamp": "20260125",
+      "value": 999.0,
+      "comment": "REDACTED",
+      "updated_at": 1769381026,
+      "requestid": "unique-test-id-123",
+      "origin": "api",
+      "creator": "felixm",
+      "is_dummy": false,
+      "is_initial": false,
+      "urtext": null,
+      "fulltext": "REDACTED",
+      "canonical": "REDACTED",
+      "formatted_value": "REDACTED",
+      "created_at": "2026-01-25T22:38:43.000Z",
+      "status": "updated"
+    }
+  }
+}

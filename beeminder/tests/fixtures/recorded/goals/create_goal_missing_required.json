@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T18:32:06.491220",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "slug": "incomplete"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals\\.json$"
+  },
+  "response": {
+    "status_code": 422,
+    "body": {
+      "errors": {
+        "gtype": [
+          "can't be blank",
+          "you must select a goal type"
+        ],
+        "base": [
+          "You must set two of (Goal, Goal Date, and Rate)",
+          "Goal units are required"
+        ]
+      }
+    }
+  }
+}

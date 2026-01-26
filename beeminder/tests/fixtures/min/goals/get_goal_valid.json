@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "GET",
+    "path": "/api/v1/users/me/goals/exercise.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "id": "abc123def456",
+      "slug": "exercise",
+      "title": "Exercise",
+      "safebuf": 3,
+      "losedate": 1700000000,
+      "limsum": "+1 in 3 days",
+      "pledge": 5.0,
+      "goalval": 10.0,
+      "rate": 1.0,
+      "goaldate": 1705000000,
+      "goal_type": "hustler",
+      "gunits": "hours",
+      "yaxis": "hours",
+      "graph_url": "https://example.com/graph.png",
+      "thumb_url": "https://example.com/thumb.png",
+      "frozen": false,
+      "won": false,
+      "lost": false,
+      "queued": false,
+      "updated_at": 1700000000,
+      "lastday": 1700000000
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "PUT",
+    "path": "/api/v1/users/me/goals/testgoal.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "title": "Updated Title"
+    }
+  },
+  "request": {
+    "method": "PUT",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "id": "goal_1",
+      "slug": "testgoal"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "GET",
+    "path": "/api/v1/users/me/goals.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+/goals\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": [
+      {
+        "slug": "exercise",
+        "title": "Daily Exercise",
+        "goal_type": "hustler",
+        "limsum": "+1 in 2 days",
+        "svg_url": "https://example.com/graph.svg",
+        "graph_url": "https://example.com/graph.png",
+        "thumb_url": "https://example.com/thumb.png",
+        "losedate": 1700000000,
+        "updated_at": 1700000000,
+        "lastday": 1700000000,
+        "queued": false,
+        "safebuf": 2
+      }
+    ]
+  }
+}

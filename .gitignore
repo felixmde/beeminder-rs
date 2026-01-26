@@ -1,5 +1,6 @@
 .github
 /docs
 /target
+__pycache__
 CLAUDE.md
 beeminder_api.txt

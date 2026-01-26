@@ -1,0 +1,57 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T17:53:31.151323",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/test/datapoints/create_all.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints/[^/]+$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": [
+      {
+        "id": "69769eebf0168adc85090f4a",
+        "timestamp": 1769381611,
+        "daystamp": "20260125",
+        "value": 10.0,
+        "comment": "REDACTED",
+        "updated_at": 1769381611,
+        "requestid": null,
+        "origin": "api",
+        "creator": "felixm",
+        "is_dummy": false,
+        "is_initial": false,
+        "urtext": null,
+        "fulltext": "REDACTED",
+        "canonical": "REDACTED",
+        "formatted_value": "REDACTED",
+        "created_at": "2026-01-25T22:53:31.000Z",
+        "status": "created"
+      },
+      {
+        "id": "69769eebf0168adc85090f4b",
+        "timestamp": 1769381611,
+        "daystamp": "20260125",
+        "value": 11.0,
+        "comment": "REDACTED",
+        "updated_at": 1769381611,
+        "requestid": null,
+        "origin": "api",
+        "creator": "felixm",
+        "is_dummy": false,
+        "is_initial": false,
+        "urtext": null,
+        "fulltext": "REDACTED",
+        "canonical": "REDACTED",
+        "formatted_value": "REDACTED",
+        "created_at": "2026-01-25T22:53:31.000Z",
+        "status": "created"
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T16:23:59.978600",
+    "method": "GET",
+    "path": "/api/v1/users/me.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "username": "felixm",
+      "timezone": "America/New_York",
+      "goals": [
+        "clean-view",
+        "free",
+        "caffeine-cutoff"
+      ],
+      "created_at": 1599952766,
+      "updated_at": 1769370925,
+      "urgency_load": 21,
+      "deadbeat": false,
+      "has_authorized_fitbit": false,
+      "default_leadtime": 3,
+      "default_alertstart": 61200,
+      "default_deadline": 0,
+      "subscription": null,
+      "subs_downto": null,
+      "subs_freq": null,
+      "subs_lifetime": null,
+      "remaining_subs_credit": 0,
+      "id": "5f5d577d55c1330906000b8f"
+    }
+  }
+}

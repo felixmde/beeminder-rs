@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "recorded_at": "2026-01-25T17:51:18.506096",
+    "method": "POST",
+    "path": "/api/v1/users/me/goals/test/datapoints.json",
+    "query": {
+      "auth_token": "REDACTED",
+      "comment": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "POST",
+    "path_pattern": "^/api/v1/users/[^/]+/goals/[^/]+/datapoints\\.json$"
+  },
+  "response": {
+    "status_code": 422,
+    "body": {
+      "errors": {
+        "value": [
+          "can't be blank",
+          "is not a number"
+        ]
+      }
+    }
+  }
+}

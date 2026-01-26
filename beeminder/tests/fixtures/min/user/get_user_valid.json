@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "recorded_at": "curated",
+    "method": "GET",
+    "path": "/api/v1/users/me.json",
+    "query": {
+      "auth_token": "REDACTED"
+    }
+  },
+  "request": {
+    "method": "GET",
+    "path_pattern": "^/api/v1/users/[^/]+\\.json$"
+  },
+  "response": {
+    "status_code": 200,
+    "body": {
+      "username": "testuser",
+      "timezone": "America/Los_Angeles",
+      "updated_at": 1700000000,
+      "goals": ["exercise", "reading", "sleep"],
+      "urgency_load": 3,
+      "deadbeat": false
+    }
+  }
+}

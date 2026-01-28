@@ -59,9 +59,8 @@ async fn main() {
     println!("TEST 3: GET /users/me/goals/pushups/datapoints.json");
     println!("{}", "=".repeat(60));
 
-    let url = format!(
-        "{base_url}/users/me/goals/pushups/datapoints.json?auth_token={api_key}&count=5"
-    );
+    let url =
+        format!("{base_url}/users/me/goals/pushups/datapoints.json?auth_token={api_key}&count=5");
     match client.get(&url).send().await {
         Ok(resp) => {
             let text = resp.text().await.unwrap();

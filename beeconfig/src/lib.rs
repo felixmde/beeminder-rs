@@ -16,9 +16,47 @@ pub enum ApiKey {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DisplayConfig {
+    #[serde(default = "default_true")]
+    pub show_pledge: bool,
+    #[serde(default)]
+    pub show_last_value: bool,
+    #[serde(default = "default_datapoints_limit")]
+    pub datapoints_limit: usize,
+}
+
+impl Default for DisplayConfig {
+    fn default() -> Self {
+        Self {
+            show_pledge: true,
+            show_last_value: false,
+            datapoints_limit: default_datapoints_limit(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TuiConfig {
+    #[serde(default = "default_true")]
+    pub refresh_on_start: bool,
+}
+
+impl Default for TuiConfig {
+    fn default() -> Self {
+        Self {
+            refresh_on_start: true,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BeeConfig {
     pub api_key: ApiKey,
     pub default_user: Option<String>,
+    #[serde(default)]
+    pub display: DisplayConfig,
+    #[serde(default)]
+    pub tui: TuiConfig,
 }
 
 impl Default for BeeConfig {
@@ -26,8 +64,18 @@ impl Default for BeeConfig {
         Self {
             api_key: ApiKey::Literal(String::new()),
             default_user: None,
+            display: DisplayConfig::default(),
+            tui: TuiConfig::default(),
         }
     }
+}
+
+const fn default_true() -> bool {
+    true
+}
+
+const fn default_datapoints_limit() -> usize {
+    20
 }
 
 #[derive(Debug, thiserror::Error)]

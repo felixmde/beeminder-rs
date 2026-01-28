@@ -544,8 +544,7 @@ async fn backup(
     let include_archived = request.include_archived.unwrap_or(true);
     let max_goals = match request.max_goals {
         Some(value) => Some(
-            usize::try_from(value)
-                .map_err(|_| "max_goals exceeds the maximum supported size")?,
+            usize::try_from(value).map_err(|_| "max_goals exceeds the maximum supported size")?,
         ),
         None => None,
     };

@@ -522,7 +522,8 @@ impl UpdateDatapoint {
 // =============================================================================
 
 /// Supported Beeminder goal types.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum GoalType {
     Hustler,
     Biker,
@@ -616,7 +617,7 @@ pub struct CreateGoal {
     /// Goal title
     pub title: String,
     /// Goal type (hustler/biker/fatloser/gainer/inboxer/drinker/custom)
-    pub goal_type: String,
+    pub goal_type: GoalType,
     /// Goal value - the number the bright red line will eventually reach
     #[serde(skip_serializing_if = "Option::is_none")]
     pub goalval: Option<f64>,
@@ -660,15 +661,11 @@ pub struct CreateGoal {
 
 impl CreateGoal {
     /// Creates a new goal with required fields
-    pub fn new(
-        slug: impl Into<String>,
-        title: impl Into<String>,
-        goal_type: impl Into<String>,
-    ) -> Self {
+    pub fn new(slug: impl Into<String>, title: impl Into<String>, goal_type: GoalType) -> Self {
         Self {
             slug: slug.into(),
             title: title.into(),
-            goal_type: goal_type.into(),
+            goal_type,
             goalval: None,
             rate: None,
             goaldate: None,
@@ -751,3 +748,33 @@ pub struct AuthTokenResponse {
     /// Error message (present when not authenticated)
     pub error: Option<String>,
 }
+
+// =============================================================================
+// MARKER TRAITS - Constrain generic fetch methods
+// =============================================================================
+
+mod private {
+    pub trait Sealed {}
+}
+
+/// Marker trait for types that can be returned from datapoint fetch operations.
+///
+/// This trait is sealed and cannot be implemented outside this crate.
+/// Only `Datapoint` and `DatapointFull` implement this trait.
+pub trait DatapointResponse: serde::de::DeserializeOwned + private::Sealed {}
+
+/// Marker trait for types that can be returned from goal fetch operations.
+///
+/// This trait is sealed and cannot be implemented outside this crate.
+/// Only `Goal` and `GoalFull` implement this trait.
+pub trait GoalResponse: serde::de::DeserializeOwned + private::Sealed {}
+
+impl private::Sealed for Datapoint {}
+impl private::Sealed for DatapointFull {}
+impl private::Sealed for Goal {}
+impl private::Sealed for GoalFull {}
+
+impl DatapointResponse for Datapoint {}
+impl DatapointResponse for DatapointFull {}
+impl GoalResponse for Goal {}
+impl GoalResponse for GoalFull {}

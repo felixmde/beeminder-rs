@@ -1,5 +1,6 @@
 use crate::EditableDatapoint;
 use anyhow::{Context, Result};
+use beeconfig::TIMESTAMP_FORMAT;
 use beeminder::types::{CreateDatapoint, Datapoint, UpdateDatapoint};
 use beeminder::BeeminderClient;
 use std::collections::{HashMap, HashSet};
@@ -7,11 +8,7 @@ use std::fs::File;
 use std::io::{BufRead, Write};
 use std::process::Command as ProcessCommand;
 use tempfile::NamedTempFile;
-use time::macros::format_description;
 use time::{PrimitiveDateTime, UtcOffset};
-
-const TIMESTAMP_FORMAT: &[time::format_description::FormatItem<'_>] =
-    format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
 
 impl From<&Datapoint> for EditableDatapoint {
     fn from(dp: &Datapoint) -> Self {

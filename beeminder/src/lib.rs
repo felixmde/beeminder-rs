@@ -3,7 +3,8 @@
 pub mod types;
 use crate::types::{
     AuthTokenResponse, CreateAllResponse, CreateDatapoint, CreateGoal, Datapoint, DatapointFull,
-    Goal, GoalFull, GoalSummary, UpdateDatapoint, UpdateGoal, UserInfo, UserInfoDiff,
+    DatapointResponse, Goal, GoalFull, GoalResponse, GoalSummary, UpdateDatapoint, UpdateGoal,
+    UserInfo, UserInfoDiff,
 };
 use reqwest::Client;
 use time::OffsetDateTime;
@@ -20,6 +21,80 @@ pub enum Error {
     },
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
+}
+
+impl Error {
+    /// Formats the error for user-friendly display.
+    ///
+    /// For HTTP status errors, parses the JSON body to extract field-level
+    /// error messages if present, otherwise falls back to pretty-printing
+    /// the JSON or raw body.
+    #[must_use]
+    pub fn format_for_display(&self) -> String {
+        match self {
+            Self::HttpStatus {
+                status,
+                reason,
+                body,
+            } => format_http_error(*status, reason, body),
+            other => other.to_string(),
+        }
+    }
+}
+
+/// Formats a Beeminder API HTTP error response for display.
+fn format_http_error(status: u16, reason: &str, body: &str) -> String {
+    use std::fmt::Write;
+
+    let reason = if reason.is_empty() {
+        "HTTP error"
+    } else {
+        reason
+    };
+    let mut output = format!("Beeminder API error ({status} {reason}):");
+
+    if let Ok(value) = serde_json::from_str::<serde_json::Value>(body) {
+        if let Some(errors) = value.get("errors").and_then(|v| v.as_object()) {
+            let mut lines = Vec::new();
+            for (key, val) in errors {
+                if let Some(arr) = val.as_array() {
+                    for item in arr {
+                        if let Some(text) = item.as_str() {
+                            let normalized = text.replace('\n', " ");
+                            lines.push(format!("{key}: {normalized}"));
+                        } else {
+                            lines.push(format!("{key}: {item}"));
+                        }
+                    }
+                } else if let Some(text) = val.as_str() {
+                    let normalized = text.replace('\n', " ");
+                    lines.push(format!("{key}: {normalized}"));
+                } else {
+                    lines.push(format!("{key}: {val}"));
+                }
+            }
+            if !lines.is_empty() {
+                output.push('\n');
+                for line in lines {
+                    let _ = writeln!(output, "  - {line}");
+                }
+                return output;
+            }
+        }
+
+        if let Ok(pretty) = serde_json::to_string_pretty(&value) {
+            output.push('\n');
+            output.push_str(&pretty);
+            return output;
+        }
+    }
+
+    if !body.trim().is_empty() {
+        output.push('\n');
+        output.push_str(body);
+    }
+
+    output
 }
 
 pub struct BeeminderClient {
@@ -245,7 +320,7 @@ impl BeeminderClient {
     }
 
     /// Private helper for fetching datapoints with generic return type
-    async fn fetch_datapoints<T: serde::de::DeserializeOwned>(
+    async fn fetch_datapoints<T: DatapointResponse>(
         &self,
         goal: &str,
         sort: Option<&str>,
@@ -391,11 +466,7 @@ impl BeeminderClient {
     }
 
     /// Private helper for fetching goals with generic return type
-    async fn fetch_goal<T: serde::de::DeserializeOwned>(
-        &self,
-        goal: &str,
-        datapoints: bool,
-    ) -> Result<T, Error> {
+    async fn fetch_goal<T: GoalResponse>(&self, goal: &str, datapoints: bool) -> Result<T, Error> {
         let mut query: Vec<(&str, &str)> = vec![];
         if datapoints {
             query.push(("datapoints", "true"));
@@ -459,5 +530,78 @@ impl BeeminderClient {
     pub async fn cancel_stepdown(&self, goal: &str) -> Result<GoalFull, Error> {
         let endpoint = format!("users/{}/goals/{goal}/cancel_stepdown.json", self.username);
         self.post(&endpoint, &()).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Error;
+
+    #[test]
+    fn format_http_error_with_field_errors() {
+        let err = Error::HttpStatus {
+            status: 422,
+            reason: "Unprocessable Entity".to_string(),
+            body: r#"{"errors":{"rate":["is required"],"goalval":["must be positive"]}}"#
+                .to_string(),
+        };
+        let formatted = err.format_for_display();
+        assert!(formatted.contains("422 Unprocessable Entity"));
+        assert!(formatted.contains("rate: is required"));
+        assert!(formatted.contains("goalval: must be positive"));
+    }
+
+    #[test]
+    fn format_http_error_with_json_body() {
+        let err = Error::HttpStatus {
+            status: 500,
+            reason: "Internal Server Error".to_string(),
+            body: r#"{"message":"Something went wrong"}"#.to_string(),
+        };
+        let formatted = err.format_for_display();
+        assert!(formatted.contains("500 Internal Server Error"));
+        assert!(formatted.contains("Something went wrong"));
+    }
+
+    #[test]
+    fn format_http_error_with_plain_text_body() {
+        let err = Error::HttpStatus {
+            status: 503,
+            reason: "Service Unavailable".to_string(),
+            body: "Service temporarily unavailable".to_string(),
+        };
+        let formatted = err.format_for_display();
+        assert!(formatted.contains("503 Service Unavailable"));
+        assert!(formatted.contains("Service temporarily unavailable"));
+    }
+
+    #[test]
+    fn format_http_error_with_empty_reason() {
+        let err = Error::HttpStatus {
+            status: 400,
+            reason: String::new(),
+            body: "Bad request".to_string(),
+        };
+        let formatted = err.format_for_display();
+        assert!(formatted.contains("400 HTTP error"));
+    }
+
+    #[test]
+    fn format_http_error_normalizes_newlines_in_field_errors() {
+        let err = Error::HttpStatus {
+            status: 422,
+            reason: "Unprocessable Entity".to_string(),
+            body: r#"{"errors":{"field":["error with\nnewline"]}}"#.to_string(),
+        };
+        let formatted = err.format_for_display();
+        assert!(formatted.contains("error with newline"));
+        assert!(!formatted.contains("error with\nnewline"));
+    }
+
+    #[test]
+    fn format_for_display_non_http_errors() {
+        let json_err = Error::Json(serde_json::from_str::<()>("invalid").unwrap_err());
+        let formatted = json_err.format_for_display();
+        assert!(formatted.contains("JSON error"));
     }
 }

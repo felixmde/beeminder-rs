@@ -16,7 +16,6 @@ use rmcp::{
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::fmt::Write;
 use std::sync::Arc;
 use time::OffsetDateTime;
 
@@ -138,68 +137,8 @@ fn tool_json<T: Serialize>(value: &T) -> CallToolResult {
         .map_or_else(|_| tool_error("Failed to serialize response"), tool_text)
 }
 
-fn format_http_error(status: u16, reason: &str, body: &str) -> String {
-    let reason = if reason.is_empty() {
-        "HTTP error"
-    } else {
-        reason
-    };
-    let mut output = format!("Beeminder API error ({status} {reason}):");
-
-    if let Ok(value) = serde_json::from_str::<serde_json::Value>(body) {
-        if let Some(errors) = value.get("errors").and_then(|v| v.as_object()) {
-            let mut lines = Vec::new();
-            for (key, val) in errors {
-                if let Some(arr) = val.as_array() {
-                    for item in arr {
-                        if let Some(text) = item.as_str() {
-                            let normalized = text.replace('\n', " ");
-                            lines.push(format!("{key}: {normalized}"));
-                        } else {
-                            lines.push(format!("{key}: {item}"));
-                        }
-                    }
-                } else if let Some(text) = val.as_str() {
-                    let normalized = text.replace('\n', " ");
-                    lines.push(format!("{key}: {normalized}"));
-                } else {
-                    lines.push(format!("{key}: {val}"));
-                }
-            }
-            if !lines.is_empty() {
-                output.push('\n');
-                for line in lines {
-                    let _ = writeln!(output, "  - {line}");
-                }
-                return output;
-            }
-        }
-
-        if let Ok(pretty) = serde_json::to_string_pretty(&value) {
-            output.push('\n');
-            output.push_str(&pretty);
-            return output;
-        }
-    }
-
-    if !body.trim().is_empty() {
-        output.push('\n');
-        output.push_str(body);
-    }
-
-    output
-}
-
 fn format_beeminder_error(err: &BeeminderError) -> String {
-    match err {
-        BeeminderError::HttpStatus {
-            status,
-            reason,
-            body,
-        } => format_http_error(*status, reason, body),
-        BeeminderError::Http(inner) => format!("HTTP error: {inner}"),
-        BeeminderError::Json(inner) => format!("JSON error: {inner}"),
-    }
+    err.format_for_display()
 }
 
 #[tool_router]

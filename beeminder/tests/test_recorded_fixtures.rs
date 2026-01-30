@@ -1,6 +1,6 @@
 mod common;
 
-use beeminder::types::{CreateDatapoint, CreateGoal, UpdateDatapoint, UpdateGoal};
+use beeminder::types::{CreateDatapoint, CreateGoal, GoalType, UpdateDatapoint, UpdateGoal};
 use common::mock_server::BeeminderMock;
 use time::OffsetDateTime;
 
@@ -120,7 +120,7 @@ async fn recorded_get_goal_not_found() {
 async fn recorded_create_goal_valid() {
     let mock = recorded_mock("goals/create_goal_valid.json").await;
     let client = mock.client();
-    let mut goal = CreateGoal::new("apitest1769383656", "REDACTED", "hustler");
+    let mut goal = CreateGoal::new("apitest1769383656", "REDACTED", GoalType::Hustler);
     goal.gunits = Some("REDACTED".to_string());
     goal.rate = Some(1.0);
     goal.goaldate = Some(OffsetDateTime::from_unix_timestamp(1_800_919_656).unwrap());
@@ -132,7 +132,7 @@ async fn recorded_create_goal_valid() {
 async fn recorded_create_goal_missing_required() {
     let mock = recorded_mock("goals/create_goal_missing_required.json").await;
     let client = mock.client();
-    let goal = CreateGoal::new("incomplete", "API Test Goal", "hustler");
+    let goal = CreateGoal::new("incomplete", "API Test Goal", GoalType::Hustler);
     let result = client.create_goal(&goal).await;
     assert!(result.is_err());
 }

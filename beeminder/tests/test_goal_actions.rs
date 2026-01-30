@@ -1,6 +1,6 @@
 mod common;
 
-use beeminder::types::{CreateGoal, UpdateGoal};
+use beeminder::types::{CreateGoal, GoalType, UpdateGoal};
 use common::mock_server::BeeminderMock;
 use time::OffsetDateTime;
 
@@ -10,7 +10,7 @@ async fn test_create_goal_valid() {
     mock.mount_fixture("goals/create_goal_valid.json").await;
 
     let client = mock.client();
-    let mut goal = CreateGoal::new("testgoal", "Test Goal", "hustler");
+    let mut goal = CreateGoal::new("testgoal", "Test Goal", GoalType::Hustler);
     goal.gunits = Some("units".to_string());
     goal.rate = Some(1.0);
     goal.goaldate = Some(OffsetDateTime::from_unix_timestamp(1_705_000_000).unwrap());
@@ -26,7 +26,7 @@ async fn test_create_goal_missing_required() {
         .await;
 
     let client = mock.client();
-    let goal = CreateGoal::new("incomplete", "Test Goal", "hustler");
+    let goal = CreateGoal::new("incomplete", "Test Goal", GoalType::Hustler);
     let result = client.create_goal(&goal).await;
     assert!(result.is_err());
 }

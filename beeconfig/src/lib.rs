@@ -226,9 +226,48 @@ impl ApiKey {
     }
 }
 
+// =============================================================================
+// TIMESTAMP UTILITIES
+// =============================================================================
+
+use time::macros::format_description;
+use time::{OffsetDateTime, PrimitiveDateTime, UtcOffset};
+
+/// Standard timestamp format used across Beeminder tools: "YYYY-MM-DD HH:MM:SS"
+pub const TIMESTAMP_FORMAT: &[time::format_description::FormatItem<'_>] =
+    format_description!("[year]-[month]-[day] [hour]:[minute]:[second]");
+
+/// Format an `OffsetDateTime` as "YYYY-MM-DD HH:MM:SS".
+#[must_use]
+pub fn format_timestamp(ts: OffsetDateTime) -> String {
+    ts.format(TIMESTAMP_FORMAT)
+        .unwrap_or_else(|_| ts.to_string())
+}
+
+/// Parse a timestamp string in "YYYY-MM-DD HH:MM:SS" format.
+///
+/// Assumes local timezone if available, otherwise UTC.
+///
+/// # Errors
+/// Returns an error if the input doesn't match the expected format.
+pub fn parse_timestamp(input: &str) -> std::result::Result<OffsetDateTime, TimestampParseError> {
+    let naive = PrimitiveDateTime::parse(input, TIMESTAMP_FORMAT)
+        .map_err(|_| TimestampParseError::InvalidFormat)?;
+    let offset = UtcOffset::current_local_offset().unwrap_or(UtcOffset::UTC);
+    Ok(naive.assume_offset(offset))
+}
+
+/// Error returned when timestamp parsing fails.
+#[derive(Debug, thiserror::Error)]
+pub enum TimestampParseError {
+    #[error("invalid timestamp format (expected YYYY-MM-DD HH:MM:SS)")]
+    InvalidFormat,
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{ApiKey, BeeConfigError};
+    use super::{format_timestamp, parse_timestamp, ApiKey, BeeConfigError, TimestampParseError};
+    use time::macros::datetime;
 
     #[test]
     fn resolves_literal_key() {
@@ -260,5 +299,51 @@ mod tests {
         };
         let err = key.resolve().unwrap_err();
         assert!(matches!(err, BeeConfigError::CommandEmpty { .. }));
+    }
+
+    #[test]
+    fn format_timestamp_produces_expected_format() {
+        let ts = datetime!(2024-06-15 14:30:45 UTC);
+        let formatted = format_timestamp(ts);
+        assert_eq!(formatted, "2024-06-15 14:30:45");
+    }
+
+    #[test]
+    fn parse_timestamp_valid_input() {
+        let result = parse_timestamp("2024-06-15 14:30:45");
+        assert!(result.is_ok());
+        let ts = result.unwrap();
+        assert_eq!(ts.year(), 2024);
+        assert_eq!(ts.month() as u8, 6);
+        assert_eq!(ts.day(), 15);
+        assert_eq!(ts.hour(), 14);
+        assert_eq!(ts.minute(), 30);
+        assert_eq!(ts.second(), 45);
+    }
+
+    #[test]
+    fn parse_timestamp_invalid_format() {
+        let result = parse_timestamp("not a timestamp");
+        assert!(matches!(result, Err(TimestampParseError::InvalidFormat)));
+    }
+
+    #[test]
+    fn parse_timestamp_partial_format() {
+        let result = parse_timestamp("2024-06-15");
+        assert!(matches!(result, Err(TimestampParseError::InvalidFormat)));
+    }
+
+    #[test]
+    fn format_and_parse_roundtrip() {
+        let original = datetime!(2024-12-25 08:00:00 UTC);
+        let formatted = format_timestamp(original);
+        let parsed = parse_timestamp(&formatted).unwrap();
+        // Note: roundtrip may differ by offset, but date/time components should match
+        assert_eq!(parsed.year(), original.year());
+        assert_eq!(parsed.month(), original.month());
+        assert_eq!(parsed.day(), original.day());
+        assert_eq!(parsed.hour(), original.hour());
+        assert_eq!(parsed.minute(), original.minute());
+        assert_eq!(parsed.second(), original.second());
     }
 }

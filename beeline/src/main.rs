@@ -10,7 +10,6 @@ use clap::error::ErrorKind;
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
 use colored::{Color, Colorize};
-use std::fmt::Write;
 use std::fs;
 use std::io::{self, Read};
 use std::process;
@@ -227,66 +226,9 @@ fn read_json_input(path: &str) -> Result<String> {
     }
 }
 
-fn format_http_error(status: u16, reason: &str, body: &str) -> String {
-    let reason = if reason.is_empty() {
-        "HTTP error"
-    } else {
-        reason
-    };
-    let mut output = format!("Beeminder API error ({status} {reason}):");
-
-    if let Ok(value) = serde_json::from_str::<serde_json::Value>(body) {
-        if let Some(errors) = value.get("errors").and_then(|v| v.as_object()) {
-            let mut lines = Vec::new();
-            for (key, val) in errors {
-                if let Some(arr) = val.as_array() {
-                    for item in arr {
-                        if let Some(text) = item.as_str() {
-                            let normalized = text.replace('\n', " ");
-                            lines.push(format!("{key}: {normalized}"));
-                        } else {
-                            lines.push(format!("{key}: {item}"));
-                        }
-                    }
-                } else if let Some(text) = val.as_str() {
-                    let normalized = text.replace('\n', " ");
-                    lines.push(format!("{key}: {normalized}"));
-                } else {
-                    lines.push(format!("{key}: {val}"));
-                }
-            }
-            if !lines.is_empty() {
-                output.push('\n');
-                for line in lines {
-                    let _ = writeln!(output, "  - {line}");
-                }
-                return output;
-            }
-        }
-
-        if let Ok(pretty) = serde_json::to_string_pretty(&value) {
-            output.push('\n');
-            output.push_str(&pretty);
-            return output;
-        }
-    }
-
-    if !body.trim().is_empty() {
-        output.push('\n');
-        output.push_str(body);
-    }
-
-    output
-}
-
 fn handle_error(err: &anyhow::Error) -> ! {
-    if let Some(BeeminderError::HttpStatus {
-        status,
-        reason,
-        body,
-    }) = err.downcast_ref::<BeeminderError>()
-    {
-        eprintln!("{}", format_http_error(*status, reason, body));
+    if let Some(bee_err) = err.downcast_ref::<BeeminderError>() {
+        eprintln!("{}", bee_err.format_for_display());
         process::exit(1);
     }
 

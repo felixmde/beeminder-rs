@@ -3,7 +3,8 @@
 use anyhow::{Context, Result};
 use beeconfig::BeeConfig;
 use beeminder::types::{
-    CreateAllResponse, CreateDatapoint, CreateGoal, GoalSummary, GoalType, UpdateGoal,
+    CreateAllResponse, CreateDatapoint, CreateGoal, DatapointFull, GoalSummary, GoalType,
+    UpdateGoal,
 };
 use beeminder::{BeeminderClient, Error as BeeminderError};
 use clap::error::ErrorKind;
@@ -13,7 +14,7 @@ use colored::{Color, Colorize};
 use std::fs;
 use std::io::{self, Read};
 use std::process;
-use time::{OffsetDateTime, UtcOffset};
+use time::{Duration, OffsetDateTime, UtcOffset};
 mod backup;
 mod edit;
 
@@ -154,6 +155,15 @@ enum Command {
     CancelStepdown {
         /// Goal slug (URL identifier)
         goal: String,
+    },
+    /// Show datapoints from recent days
+    Report {
+        /// Number of days to look back (default: 14)
+        #[arg(short, long, default_value = "14")]
+        days: u64,
+        /// Filter to a specific goal
+        #[arg(short, long)]
+        goal: Option<String>,
     },
     /// Generate shell completions
     #[command(hide = true)]
@@ -428,6 +438,45 @@ async fn run(cli: Cli) -> Result<()> {
             let client = get_client()?;
             let updated = client.cancel_stepdown(&goal).await?;
             println!("{}", updated.slug);
+        }
+        Command::Report { days, goal } => {
+            let client = get_client()?;
+            let since = OffsetDateTime::now_utc() - Duration::days(i64::try_from(days)?);
+            let diff = client.get_user_diff(since).await?;
+
+            // Collect all datapoints with their goal slug
+            let mut all_datapoints: Vec<(&str, &DatapointFull)> = Vec::new();
+            for g in &diff.goals {
+                if let Some(filter) = &goal {
+                    if &g.slug != filter {
+                        continue;
+                    }
+                }
+                if let Some(datapoints) = &g.datapoints {
+                    for dp in datapoints {
+                        all_datapoints.push((&g.slug, dp));
+                    }
+                }
+            }
+
+            // Sort by timestamp descending (most recent first)
+            all_datapoints.sort_by(|a, b| b.1.timestamp.cmp(&a.1.timestamp));
+
+            // Display
+            if all_datapoints.is_empty() {
+                println!("No datapoints in the last {days} days.");
+            } else {
+                for (slug, dp) in all_datapoints {
+                    let value = dp.value.map_or_else(|| "-".to_string(), |v| v.to_string());
+                    let comment = dp.comment.as_deref().unwrap_or("");
+                    let date = dp.daystamp.as_str();
+                    if comment.is_empty() {
+                        println!("{date}  {slug:20}  {value}");
+                    } else {
+                        println!("{date}  {slug:20}  {value}  \"{comment}\"");
+                    }
+                }
+            }
         }
     }
 

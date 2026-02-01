@@ -1,0 +1,75 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            suffix: linux-x86_64
+            exe: ""
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            suffix: macos-x86_64
+            exe: ""
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            suffix: macos-aarch64
+            exe: ""
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            suffix: windows-x86_64
+            exe: ".exe"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build (release)
+        run: cargo build --release --target ${{ matrix.target }} -p beetui -p beeline -p beemcp
+
+      - name: Rename binaries
+        shell: bash
+        run: |
+          mkdir -p dist
+          for bin in beetui beeline beemcp; do
+            cp "target/${{ matrix.target }}/release/${bin}${{ matrix.exe }}" "dist/${bin}-${{ matrix.suffix }}${{ matrix.exe }}"
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.suffix }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum * > SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

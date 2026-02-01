@@ -109,12 +109,32 @@ fn handle_detail_key(
                 }
             }
             KeyCode::Backspace => {
-                input.buffer.pop();
+                input.backspace();
+                detail.input = Some(input);
+            }
+            KeyCode::Delete => {
+                input.delete();
+                detail.input = Some(input);
+            }
+            KeyCode::Left => {
+                input.move_left();
+                detail.input = Some(input);
+            }
+            KeyCode::Right => {
+                input.move_right();
+                detail.input = Some(input);
+            }
+            KeyCode::Home => {
+                input.move_home();
+                detail.input = Some(input);
+            }
+            KeyCode::End => {
+                input.move_end();
                 detail.input = Some(input);
             }
             KeyCode::Char(c) => {
                 if !key.modifiers.contains(KeyModifiers::CONTROL) {
-                    input.buffer.push(c);
+                    input.insert(c);
                 }
                 detail.input = Some(input);
             }
@@ -166,7 +186,7 @@ fn start_detail_edit(detail: &mut DetailState) {
             EditorCol::Value => row.value.to_string(),
             EditorCol::Comment => row.comment.clone(),
         };
-        detail.input = Some(EditInput { buffer });
+        detail.input = Some(EditInput::new(buffer));
     }
 }
 

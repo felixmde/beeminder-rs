@@ -2,9 +2,9 @@
 
 pub mod types;
 use crate::types::{
-    AuthTokenResponse, CreateAllResponse, CreateDatapoint, CreateGoal, Datapoint, DatapointFull,
-    DatapointResponse, Goal, GoalFull, GoalResponse, GoalSummary, UpdateDatapoint, UpdateGoal,
-    UserInfo, UserInfoDiff,
+    AuthTokenResponse, Charge, CreateAllResponse, CreateCharge, CreateDatapoint, CreateGoal,
+    Datapoint, DatapointFull, DatapointResponse, Goal, GoalFull, GoalResponse, GoalSummary,
+    UpdateDatapoint, UpdateGoal, UserInfo, UserInfoDiff,
 };
 use reqwest::Client;
 use time::OffsetDateTime;
@@ -530,6 +530,17 @@ impl BeeminderClient {
     pub async fn cancel_stepdown(&self, goal: &str) -> Result<GoalFull, Error> {
         let endpoint = format!("users/{}/goals/{goal}/cancel_stepdown.json", self.username);
         self.post(&endpoint, &()).await
+    }
+
+    /// Creates a charge against a user's credit card.
+    ///
+    /// This endpoint allows charging an arbitrary amount to a Beeminder user.
+    /// The minimum charge amount is $1.00.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or response cannot be parsed.
+    pub async fn create_charge(&self, charge: &CreateCharge) -> Result<Charge, Error> {
+        self.post("charges.json", charge).await
     }
 }
 

@@ -22,3 +22,4 @@ tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 anyhow = "1.0"
 time = { version = "0.3", features = ["local-offset"] }
 serde_json = "1.0"
+unicode-width = "0.1"

@@ -749,6 +749,59 @@ pub struct AuthTokenResponse {
     pub error: Option<String>,
 }
 
+/// A charge created against a user's credit card
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Charge {
+    /// Unique identifier for the charge
+    pub id: String,
+    /// The amount charged in USD
+    pub amount: f64,
+    /// Explanation of why the charge was made
+    pub note: Option<String>,
+    /// The Beeminder username of the user being charged
+    pub username: String,
+}
+
+/// Parameters for creating a charge
+#[must_use]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CreateCharge {
+    /// Username of the user who is getting charged
+    pub user_id: String,
+    /// The amount to charge in USD (minimum 1.00)
+    pub amount: f64,
+    /// Optional explanation of why the charge was made
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    /// If true, the charge is not actually created but the JSON is returned as if it were
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dryrun: Option<bool>,
+}
+
+impl CreateCharge {
+    /// Creates a new charge with required fields
+    pub fn new(user_id: impl Into<String>, amount: f64) -> Self {
+        Self {
+            user_id: user_id.into(),
+            amount,
+            note: None,
+            dryrun: None,
+        }
+    }
+
+    /// Adds a note explaining the charge
+    pub fn with_note(mut self, note: impl Into<String>) -> Self {
+        self.note = Some(note.into());
+        self
+    }
+
+    /// Sets dryrun mode (charge is not actually created)
+    pub const fn with_dryrun(mut self, dryrun: bool) -> Self {
+        self.dryrun = Some(dryrun);
+        self
+    }
+}
+
 // =============================================================================
 // MARKER TRAITS - Constrain generic fetch methods
 // =============================================================================

@@ -4,6 +4,7 @@ use beeminder::types::{Datapoint, GoalSummary};
 use ratatui::widgets::TableState;
 use std::time::{Duration, Instant};
 use time::OffsetDateTime;
+use unicode_width::UnicodeWidthStr;
 
 pub const STATUS_TTL: Duration = Duration::from_secs(4);
 pub const TICK_RATE: Duration = Duration::from_millis(200);
@@ -148,6 +149,80 @@ impl EditorCol {
 #[derive(Debug)]
 pub struct EditInput {
     pub buffer: String,
+    pub cursor: usize,
+}
+
+impl EditInput {
+    /// Creates a new EditInput with cursor at the end.
+    pub fn new(buffer: String) -> Self {
+        let cursor = buffer.len();
+        Self { buffer, cursor }
+    }
+
+    /// Insert a character at the cursor position.
+    pub fn insert(&mut self, c: char) {
+        self.buffer.insert(self.cursor, c);
+        self.cursor += c.len_utf8();
+    }
+
+    /// Delete the character before the cursor (backspace).
+    pub fn backspace(&mut self) {
+        if self.cursor > 0 {
+            let prev = self.buffer[..self.cursor]
+                .chars()
+                .last()
+                .map(char::len_utf8)
+                .unwrap_or(0);
+            self.cursor -= prev;
+            self.buffer.remove(self.cursor);
+        }
+    }
+
+    /// Delete the character at the cursor (delete key).
+    pub fn delete(&mut self) {
+        if self.cursor < self.buffer.len() {
+            self.buffer.remove(self.cursor);
+        }
+    }
+
+    /// Move cursor left by one character.
+    pub fn move_left(&mut self) {
+        if self.cursor > 0 {
+            let prev = self.buffer[..self.cursor]
+                .chars()
+                .last()
+                .map(char::len_utf8)
+                .unwrap_or(0);
+            self.cursor -= prev;
+        }
+    }
+
+    /// Move cursor right by one character.
+    pub fn move_right(&mut self) {
+        if self.cursor < self.buffer.len() {
+            let next = self.buffer[self.cursor..]
+                .chars()
+                .next()
+                .map(char::len_utf8)
+                .unwrap_or(0);
+            self.cursor += next;
+        }
+    }
+
+    /// Move cursor to the beginning.
+    pub fn move_home(&mut self) {
+        self.cursor = 0;
+    }
+
+    /// Move cursor to the end.
+    pub fn move_end(&mut self) {
+        self.cursor = self.buffer.len();
+    }
+
+    /// Returns the cursor position in display columns.
+    pub fn cursor_display_width(&self) -> usize {
+        self.buffer[..self.cursor].width()
+    }
 }
 
 /// A row in the datapoint editor.

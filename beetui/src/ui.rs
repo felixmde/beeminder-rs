@@ -8,8 +8,9 @@ use beeconfig::format_timestamp;
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Position, Rect};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Cell, Paragraph, Row, Table, TableState};
+use ratatui::widgets::{Block, Borders, Cell, Clear, Paragraph, Row, Table, TableState};
 use std::time::Duration;
+use unicode_width::UnicodeWidthStr;
 
 /// Render the application based on current screen.
 pub fn render_app(f: &mut ratatui::Frame, app: &mut App) {
@@ -66,12 +67,12 @@ fn render_main(f: &mut ratatui::Frame, app: &mut App) {
 
     if let MainInput::InlineAdd { buffer } = &app.main_input {
         let prompt = format!("Add datapoint: {buffer}");
-        set_footer_cursor(f, layout[1], prompt.len());
+        set_footer_cursor(f, layout[1], UnicodeWidthStr::width(prompt.as_str()));
     }
 
     if let MainInput::Filter { buffer } = &app.main_input {
         let prompt = format!("Filter: {buffer}");
-        set_footer_cursor(f, layout[1], prompt.len());
+        set_footer_cursor(f, layout[1], UnicodeWidthStr::width(prompt.as_str()));
     }
 }
 
@@ -194,11 +195,7 @@ fn render_detail(f: &mut ratatui::Frame, status: Option<&StatusMessage>, detail:
     }
 
     render_footer_detail(f, status, detail, layout[1]);
-
-    if let Some(input) = &detail.input {
-        let prompt = format!("Edit {}: {}", detail.selected_col.label(), input.buffer);
-        set_footer_cursor(f, layout[1], prompt.len());
-    }
+    render_detail_input_modal(f, detail, size);
 }
 
 fn build_editor_row<'a>(row: &'a EditorRow, detail: &DetailState, idx: usize) -> Row<'a> {
@@ -278,24 +275,61 @@ fn render_footer_detail(
 
     render_status_line(f, status, layout[0]);
 
-    let line = detail.input.as_ref().map_or_else(
-        || {
-            Line::from("j/k or up/down: move  h/l or left/right: column  Enter: edit  n: new  d: delete  s: save  Esc: back")
-        },
-        |input| {
-            Line::from(vec![
-                Span::raw(format!(
-                    "Edit {}: {}",
-                    detail.selected_col.label(),
-                    input.buffer
-                )),
-                Span::raw("  Enter: confirm  Esc: cancel"),
-            ])
-        },
-    );
+    let line = if detail.input.is_some() {
+        Line::from("Enter: confirm  Esc: cancel")
+    } else {
+        Line::from("j/k or up/down: move  h/l or left/right: column  Enter: edit  n: new  d: delete  s: save  Esc: back")
+    };
 
     let footer = Paragraph::new(line);
     f.render_widget(footer, layout[1]);
+}
+
+fn render_detail_input_modal(f: &mut ratatui::Frame, detail: &DetailState, area: Rect) {
+    let Some(input) = &detail.input else {
+        return;
+    };
+
+    let popup = centered_rect(60, 20, area);
+    f.render_widget(Clear, popup);
+
+    let title = format!("Edit {}", detail.selected_col.label());
+    let block = Block::default().title_top(title).borders(Borders::ALL);
+    let inner = block.inner(popup);
+    f.render_widget(block, popup);
+    f.render_widget(Paragraph::new(input.buffer.as_str()), inner);
+
+    if inner.width == 0 || inner.height == 0 {
+        return;
+    }
+
+    let offset = u16::try_from(input.cursor_display_width()).unwrap_or(u16::MAX);
+    let max_x = inner.x + inner.width - 1;
+    let cursor_x = inner.x.saturating_add(offset).min(max_x);
+    let cursor_y = inner.y;
+    f.set_cursor_position(Position::new(cursor_x, cursor_y));
+}
+
+fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
+    let vertical = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(area);
+
+    let horizontal = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(vertical[1]);
+
+    horizontal[1]
 }
 
 fn render_footer_main(
@@ -345,7 +379,7 @@ fn set_footer_cursor(f: &mut ratatui::Frame, area: Rect, x_offset: usize) {
     }
     let offset = u16::try_from(x_offset).unwrap_or(u16::MAX);
     let max_x = area.x + area.width - 1;
-    let cursor_x = area.x.saturating_add(offset.saturating_add(1)).min(max_x);
+    let cursor_x = area.x.saturating_add(offset).min(max_x);
     let cursor_y = area.y + 1;
     f.set_cursor_position(Position::new(cursor_x, cursor_y));
 }

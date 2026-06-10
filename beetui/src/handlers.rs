@@ -52,10 +52,8 @@ fn handle_main_key(app: &mut App, key: KeyEvent, runtime: &Runtime) -> bool {
             KeyCode::Backspace => {
                 buffer.pop();
             }
-            KeyCode::Char(c) => {
-                if !key.modifiers.contains(KeyModifiers::CONTROL) {
-                    buffer.push(c);
-                }
+            KeyCode::Char(c) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                buffer.push(c);
             }
             _ => {}
         },
@@ -70,12 +68,10 @@ fn handle_main_key(app: &mut App, key: KeyEvent, runtime: &Runtime) -> bool {
                 app.filter = buffer.clone();
                 app.refresh_filtered();
             }
-            KeyCode::Char(c) => {
-                if !key.modifiers.contains(KeyModifiers::CONTROL) {
-                    buffer.push(c);
-                    app.filter = buffer.clone();
-                    app.refresh_filtered();
-                }
+            KeyCode::Char(c) if !key.modifiers.contains(KeyModifiers::CONTROL) => {
+                buffer.push(c);
+                app.filter = buffer.clone();
+                app.refresh_filtered();
             }
             _ => {}
         },
@@ -167,10 +163,8 @@ fn handle_detail_key(
         KeyCode::Enter => start_detail_edit(detail),
         KeyCode::Char('n') => detail.add_new_row(),
         KeyCode::Char('d') => detail.toggle_delete(),
-        KeyCode::Char('s') => {
-            if save_detail_changes(app, detail, runtime) {
-                return DetailOutcome::Exit;
-            }
+        KeyCode::Char('s') if save_detail_changes(app, detail, runtime) => {
+            return DetailOutcome::Exit;
         }
         _ => {}
     }

@@ -460,7 +460,7 @@ async fn run(cli: Cli) -> Result<()> {
             }
 
             // Sort by timestamp descending (most recent first)
-            all_datapoints.sort_by(|a, b| b.1.timestamp.cmp(&a.1.timestamp));
+            all_datapoints.sort_by_key(|b| std::cmp::Reverse(b.1.timestamp));
 
             // Display
             if all_datapoints.is_empty() {

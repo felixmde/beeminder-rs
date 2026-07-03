@@ -14,7 +14,7 @@ use colored::{Color, Colorize};
 use std::fs;
 use std::io::{self, Read};
 use std::process;
-use time::{Duration, OffsetDateTime, UtcOffset};
+use time::{Date, Duration, Month, OffsetDateTime, UtcOffset};
 mod backup;
 mod edit;
 
@@ -37,6 +37,9 @@ enum Command {
         value: f64,
         /// An optional comment for the datapoint
         comment: Option<String>,
+        /// Date for the datapoint in YYYY-MM-DD format
+        #[arg(long)]
+        date: Option<String>,
     },
     /// Edit recent datapoints for a goal
     Edit {
@@ -224,6 +227,27 @@ fn parse_unix_timestamp(value: Option<i64>) -> Result<Option<OffsetDateTime>> {
         .map_err(|err| anyhow::anyhow!("Invalid unix timestamp: {err}"))
 }
 
+fn parse_date_daystamp(value: &str) -> Result<String> {
+    let invalid = || anyhow::anyhow!("Invalid date '{value}'; expected YYYY-MM-DD");
+    let [year, month, day] = value
+        .split('-')
+        .collect::<Vec<_>>()
+        .try_into()
+        .map_err(|_| invalid())?;
+
+    if year.len() != 4 || month.len() != 2 || day.len() != 2 {
+        return Err(invalid());
+    }
+
+    let year = year.parse::<i32>().map_err(|_| invalid())?;
+    let month = month.parse::<u8>().map_err(|_| invalid())?;
+    let day = day.parse::<u8>().map_err(|_| invalid())?;
+    let parsed_month = Month::try_from(month).map_err(|_| invalid())?;
+    Date::from_calendar_date(year, parsed_month, day).map_err(|_| invalid())?;
+
+    Ok(format!("{year:04}{month:02}{day:02}"))
+}
+
 fn read_json_input(path: &str) -> Result<String> {
     if path == "-" {
         let mut buffer = String::new();
@@ -308,11 +332,16 @@ async fn run(cli: Cli) -> Result<()> {
             goal,
             value,
             comment,
+            date,
         } => {
             let client = get_client()?;
             let mut dp = CreateDatapoint::new(value);
             if let Some(comment) = comment {
                 dp = dp.with_comment(&comment);
+            }
+            if let Some(date) = date {
+                let daystamp = parse_date_daystamp(&date)?;
+                dp = dp.with_daystamp(&daystamp);
             }
             client.create_datapoint(&goal, &dp).await?;
         }
@@ -481,4 +510,52 @@ async fn run(cli: Cli) -> Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_add_date_option() {
+        let cli = Cli::try_parse_from([
+            "beeline",
+            "add",
+            "pushups",
+            "25",
+            "morning set",
+            "--date",
+            "2026-07-01",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Add {
+                goal,
+                value,
+                comment,
+                date,
+            } => {
+                assert_eq!(goal, "pushups");
+                assert!((value - 25.0).abs() < f64::EPSILON);
+                assert_eq!(comment.as_deref(), Some("morning set"));
+                assert_eq!(date.as_deref(), Some("2026-07-01"));
+            }
+            _ => panic!("expected add command"),
+        }
+    }
+
+    #[test]
+    fn parses_date_as_daystamp() {
+        assert_eq!(parse_date_daystamp("2026-07-01").unwrap(), "20260701");
+    }
+
+    #[test]
+    fn rejects_invalid_add_date() {
+        let err = parse_date_daystamp("20260701").unwrap_err();
+        assert!(
+            err.to_string().contains("YYYY-MM-DD"),
+            "unexpected error: {err}"
+        );
+    }
 }

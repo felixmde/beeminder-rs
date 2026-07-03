@@ -40,6 +40,7 @@ beeline list
 # Add a datapoint
 beeline add meditation 1
 beeline add pushups 25 "morning set"
+beeline add meditation 1 --date 2026-07-01
 
 # Edit recent datapoints for a goal (opens in $EDITOR)
 beeline edit meditation
